@@ -3,8 +3,9 @@ import os
 from random import randrange
 from replit import db
 from keep_awake import keep_alive
+from discord.ext import commands
 
-client = discord.Client()
+client = commands.Bot(command_prefix = '$')
 
 bPuen = ["ไอ่ปืนมันไก่กรู๊กกก", "น้องเกิ๊นน", "กระจอก", "ขี้เมา"]
 
@@ -39,9 +40,13 @@ async def on_message(message):
   
   if message.content.startswith('$ลุง'):
     await message.channel.send(bLung[randrange(len(bLung))] + " :footprints:")
+  
 
 
-
+@client.command(pass_context = True)
+async def join(ctx):
+  channel = ctx.message.author.voice.voice_channel
+  await client.join_voice_channel(channel)
   
 keep_alive()
 
