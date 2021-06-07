@@ -76,6 +76,13 @@ async def ten(ctx):
 
 @client.command(pass_context = True, aliases=["p", "pl"])
 async def play(ctx, url:str):
+  if (ctx.author.voice):
+    channel = ctx.author.voice.channel
+    await channel.connect()
+    await ctx.send("เดี๋ยวผมจะร้องเพลงให้ท่านฟังนะครับ")
+  else:
+    await ctx.message.channel.send("เข้าซักห้องก่อนค่อยเรียกกู ไอ่ฟาย")
+    
   channel = ctx.author.voice.channel
   voice_client = get(client.voice_clients, guild=ctx.guild)
 
@@ -123,11 +130,61 @@ async def alarm(ctx, alarm_time):
               if alarm_min == current_min:
                   if alarm_sec == current_sec:
                       await ctx.message.channel.send("ไปนอนได้แล้วน้องๆ   เดี๋ยวโดนเขกหัวน้าาาาาาาา")
+                      if (ctx.author.voice):
+                        channel = ctx.author.voice.channel
+                        await channel.connect()
+                        playSong(ctx, "https://www.youtube.com/watch?v=hA_0cI1BJhs")
                       break
 
 
+@client.command(pass_context = True)
+async def pause(ctx):
+  voice = get (client.voice_clients, guild = ctx.guild)
+  
+  if voice and voice.is_playing():
+    voice.pause()
+    await ctx.message.channel.send("music paused")
+  else:
+    await ctx.message.channel.send("music not playing failed pause")
+
+@client.command(pass_context = True)
+async def resume(ctx):
+  voice = get (client.voice_clients, guild = ctx.guild)
+
+  if voice and voice.is_paused():
+    voice.resume()
+    await ctx.send("resumed music")
+  else:
+    await ctx.send("music is not paused")
+
+@client.command(pass_context = True)
+async def skip(ctx):
+  voice = get (client.voice_clients, guild = ctx.guild)
+  
+  if voice and voice.is_playing():
+    voice.skip()
+    await ctx.message.channel.send("music stopped")
+  else:
+    await ctx.message.channel.send("music is not playing failed to stop")
 
 
+
+
+
+
+def playSong(ctx, url):
+  channel = ctx.author.voice.channel
+  voice_client = get(client.voice_clients, guild=ctx.guild)
+
+  YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': 'True'}
+  FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+
+  if not voice_client.is_playing():
+    with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
+      info = ydl.extract_info(url, download=False)
+      URL = info['formats'][0]['url']
+    voice_client.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
+    voice_client.is_playing()
 
 
 
