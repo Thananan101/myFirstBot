@@ -8,6 +8,9 @@ from discord.ext import commands
 from discord import FFmpegPCMAudio
 from discord.utils import get
 import youtube_dl
+from alarm import *
+
+from datetime import datetime   #To set date and time
 
 TOKEN = ('ODQ5OTg3ODM5Mjc3NzkzMjgw.YLjK3A.AA6ZPnjXHXUe4k0x_oiYNqnqq4Y')
 
@@ -55,7 +58,7 @@ async def arrogant(ctx):
 
 @client.command(pass_context = True, aliases=["เอ้ว"])
 async def elf(ctx):
-  await ctx.message.channel.send("Jett korean อะ seoldam แต่น้องเอ้วอะ so hot")
+  await ctx.message.channel.send("Jett korean อะ seoldam แต่น้องเอ้วอะ so hot   <:sohuttt:850139344836886568>")
 
 # how to use custom emoji: <:emojiName:emojiID> you can get the id from sticker URL
 @client.command(pass_context = True, aliases=["ปืน"])
@@ -65,6 +68,10 @@ async def puen(ctx):
 @client.command(pass_context = True, aliases=["ลุง"])
 async def lung(ctx):
   await ctx.message.channel.send(bLung[randrange(len(bLung))] + " :footprints:")
+
+@client.command(pass_context = True, aliases=["เท็น"])
+async def ten(ctx):
+  await ctx.message.channel.send("เหล่ท่อ <:tenenz:841397333136244756>")
 
 
 @client.command(pass_context = True, aliases=["p", "pl"])
@@ -84,6 +91,41 @@ async def play(ctx, url:str):
   else:
     await ctx.message.channel.send("ร้องเพลงอยู่ไอ้สัส ไม่ว่างโว้ยยย")
     return
+
+
+@client.command(pass_context = True)
+async def alarm(ctx, alarm_time):
+  fk_time = alarm_time
+  validate = validate_time(alarm_time)
+  alarm_time = timezoneToTH(alarm_time)
+  print(alarm_time)
+  print(validate)
+  print(len(alarm_time))
+  if validate != "ok":
+    await ctx.message.channel.send("ใส่เวลาแบบ HH:MM:SS AM/PM นะครับขอบคุณครับ")
+  else:
+    await ctx.message.channel.send("Setting alarm for " + fk_time)
+    alarm_hour = alarm_time[0:2]
+    alarm_min = alarm_time[3:5]
+    alarm_sec = alarm_time[6:8]
+    alarm_period = alarm_time[8:].upper()
+
+    while True:
+      now = datetime.now()
+
+      current_hour = now.strftime("%I")
+      current_min = now.strftime("%M")
+      current_sec = now.strftime("%S")
+      current_period = now.strftime("%p")
+
+      if alarm_period == current_period:
+          if alarm_hour == current_hour:
+              if alarm_min == current_min:
+                  if alarm_sec == current_sec:
+                      await ctx.message.channel.send("ไปนอนได้แล้วน้องๆ   เดี๋ยวโดนเขกหัวน้าาาาาาาา")
+                      break
+
+
 
 
 
