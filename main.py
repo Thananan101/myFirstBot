@@ -73,6 +73,10 @@ async def lung(ctx):
 async def ten(ctx):
   await ctx.message.channel.send("เหล่ท่อ <:tenenz:841397333136244756>")
 
+@client.command(pass_context = True, aliases=["ชานม", "หนม", "น้ำหวาน", "ขนมนมเนยนุ๊บนิ๊บ"])
+async def chanom(ctx):
+  await ctx.message.channel.send("ไอ้นั่นมันชื่อภูมิ ไอ้สัส เรียกให้ถูกดิ๊ <:Chandsome:851074765305020476>")
+
 
 @client.command(pass_context = True, aliases=["p", "pl"])
 async def play(ctx, url:str):
@@ -162,7 +166,7 @@ async def skip(ctx):
   voice = get (client.voice_clients, guild = ctx.guild)
   
   if voice and voice.is_playing():
-    voice.skip()
+    voice.stop()
     await ctx.message.channel.send("music stopped")
   else:
     await ctx.message.channel.send("music is not playing failed to stop")
@@ -185,6 +189,8 @@ def playSong(ctx, url):
       URL = info['formats'][0]['url']
     voice_client.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
     voice_client.is_playing()
+
+
 
 
 
