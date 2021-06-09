@@ -12,6 +12,8 @@ from alarm import *
 
 from datetime import datetime   #To set date and time
 
+from os import system
+
 TOKEN = ('ODQ5OTg3ODM5Mjc3NzkzMjgw.YLjK3A.AA6ZPnjXHXUe4k0x_oiYNqnqq4Y')
 
 client = commands.Bot(command_prefix = '$')
@@ -77,6 +79,10 @@ async def ten(ctx):
 async def chanom(ctx):
   await ctx.message.channel.send("ไอ้นั่นมันชื่อภูมิ ไอ้สัส เรียกให้ถูกดิ๊ <:Chandsome:851074765305020476>")
 
+@client.command(pass_context = True, aliases=["ภูมิ"])
+async def poom(ctx):
+  await ctx.message.channel.send("สวัสดีคร้าบบ ทุกคนนน ผมชื่อภูมินะครับ <:Chandsome:851074765305020476>")
+
 
 @client.command(pass_context = True, aliases=["p", "pl"])
 async def play(ctx, url:str):
@@ -97,6 +103,7 @@ async def play(ctx, url:str):
     with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
       info = ydl.extract_info(url, download=False)
       URL = info['formats'][0]['url']
+
     voice_client.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
     voice_client.is_playing()
   else:
