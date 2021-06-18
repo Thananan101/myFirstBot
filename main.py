@@ -20,7 +20,7 @@ client = commands.Bot(command_prefix = '$')
 
 bPuen = ["ไอ่ปืนมันไก่กรู๊กกก", "น้องเกิ๊นน", "กระจอก", "ขี้เมา", "เด็กเหี้ย"]
 bLung = ["ไอ้สัสลุง หัดใช้สมองบ้างนะไอ้เหี้ยย", "7 ปีละนะไอ้สัส เมื่อไหร่จะย้ายออกจากข้างบ้านกุซักที"]
-
+bTee = ["ไม่มีคอนโดมาเอากับพี่ <:Tee_smile:850487711420645386>", "ผมไม่ใช่ทีธรรมดา ผมอะทีรัก <:Tee_smile:850487711420645386>"]
 
 @client.event
 async def on_ready():
@@ -30,15 +30,18 @@ async def on_ready():
 
 @client.command(pass_context = True, aliases=["j"])
 async def join(ctx):
-  if (ctx.author.voice):
-    channel = ctx.author.voice.channel
-    await channel.connect()
-    await ctx.send("เข้ามาแล้วขอรับนายท่าน มีอะไรให้รับใช้")
-  else:
-    await ctx.message.channel.send("เข้าซักห้องก่อนค่อยเรียกกู ไอ่ฟาย")
+  voice_client = discord.utils.get(client.voice_clients, guild=ctx.guild)
+  if voice_client == None:
+    if (ctx.author.voice):
+      channel = ctx.author.voice.channel
+      await channel.connect()
+      await ctx.send("เข้ามาแล้วขอรับนายท่าน มีอะไรให้รับใช้")
+    else:
+      await ctx.message.channel.send("เข้าซักห้องก่อนค่อยเรียกกู ไอ่ฟาย")
+  
 
 
-@client.command(pass_context = True, aliases=["l"])
+@client.command(pass_context = True, aliases=["l", "dc"])
 async def leave(ctx):
   if (ctx.voice_client):
     await ctx.voice_client.disconnect()
@@ -83,15 +86,21 @@ async def chanom(ctx):
 async def poom(ctx):
   await ctx.message.channel.send("สวัสดีคร้าบบ ทุกคนนน ผมชื่อภูมินะครับ <:Chandsome:851074765305020476>")
 
+@client.command(pass_context = True, aliases=["ที"])
+async def tee(ctx):
+  await ctx.message.channel.send(bTee[randrange(len(bTee))])
 
 @client.command(pass_context = True, aliases=["p", "pl"])
 async def play(ctx, url:str):
-  if (ctx.author.voice):
-    channel = ctx.author.voice.channel
-    await channel.connect()
-    await ctx.send("เดี๋ยวผมจะร้องเพลงให้ท่านฟังนะครับ")
-  else:
-    await ctx.message.channel.send("เข้าซักห้องก่อนค่อยเรียกกู ไอ่ฟาย")
+
+  voice_client = discord.utils.get(client.voice_clients, guild=ctx.guild)
+  if voice_client == None:
+    if (ctx.author.voice):
+      channel = ctx.author.voice.channel
+      await channel.connect()
+      await ctx.send("เข้ามาแล้วขอรับนายท่าน มีอะไรให้รับใช้")
+    else:
+      await ctx.message.channel.send("เข้าซักห้องก่อนค่อยเรียกกู ไอ่ฟาย")
     
   channel = ctx.author.voice.channel
   voice_client = get(client.voice_clients, guild=ctx.guild)
@@ -110,6 +119,7 @@ async def play(ctx, url:str):
     await ctx.message.channel.send("ร้องเพลงอยู่ไอ้สัส ไม่ว่างโว้ยยย")
     return
 
+#บอทเข้าห้องไม่ได้ติด channel.connect()
 
 @client.command(pass_context = True)
 async def alarm(ctx, alarm_time):
@@ -198,10 +208,12 @@ def playSong(ctx, url):
     voice_client.is_playing()
 
 
-
+def is_connected(ctx):
+    voice_client = get(client.voice_clients, guild=ctx.guild)
+    return 
 
 
 
 keep_alive()
 
-client.run(TOKEN)
+client.run('ODQ5OTg3ODM5Mjc3NzkzMjgw.YLjK3A.AA6ZPnjXHXUe4k0x_oiYNqnqq4Y')
