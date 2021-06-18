@@ -14,6 +14,10 @@ from datetime import datetime   #To set date and time
 
 from os import system
 
+
+
+from google_trans_new import google_translator  
+
 TOKEN = ('ODQ5OTg3ODM5Mjc3NzkzMjgw.YLjK3A.AA6ZPnjXHXUe4k0x_oiYNqnqq4Y')
 
 client = commands.Bot(command_prefix = '$')
@@ -189,6 +193,12 @@ async def skip(ctx):
     await ctx.message.channel.send("music is not playing failed to stop")
 
 
+@client.command(pass_context = True, aliases=['tr', 'แปล'])
+async def translate(ctx, *, args):
+  text = ' '.join(args)
+  translator = google_translator()  
+  txt_translated = translator.translate(args, lang_tgt='th')
+  await ctx.send(txt_translated)
 
 
 
