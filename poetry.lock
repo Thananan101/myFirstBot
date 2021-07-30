@@ -140,6 +140,14 @@ dotenv = ["python-dotenv"]
 
 [[package]]
 category = "main"
+description = "A free and unlimited python tools for google translate api."
+name = "google-trans-new"
+optional = false
+python-versions = "*"
+version = "1.1.9"
+
+[[package]]
+category = "main"
 description = "Free Google Translate API for Python. Translates totally free of charge."
 name = "googletrans"
 optional = false
@@ -374,7 +382,7 @@ python-versions = "*"
 version = "2021.5.16"
 
 [metadata]
-content-hash = "78c88898b8b8174b33cc263c30ff08ec67d63e50134c2bcd18c032c14e848735"
+content-hash = "277d3ee777f2a488ef1ea8d4f411a1e618707ccf79c4a539e4e8ad3bc71adb15"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -506,6 +514,10 @@ ffmpeg = [
 flask = [
     {file = "Flask-2.0.1-py3-none-any.whl", hash = "sha256:a6209ca15eb63fc9385f38e452704113d679511d9574d09b2cf9183ae7d20dc9"},
     {file = "Flask-2.0.1.tar.gz", hash = "sha256:1c4c257b1892aec1398784c63791cbaa43062f1f7aeb555c4da961b20ee68f55"},
+]
+google-trans-new = [
+    {file = "google_trans_new-1.1.9-py3-none-any.whl", hash = "sha256:796c20c73ad5f473f126f3b8cbdcaf3fa96e7eabef18e73aac9e4ccc68bb72ed"},
+    {file = "google_trans_new-1.1.9.tar.gz", hash = "sha256:9f6643420334cc1b94ebd84e03774736e76c0564208efb1bc9c5019b9820e19b"},
 ]
 googletrans = [
     {file = "googletrans-3.0.0.tar.gz", hash = "sha256:44caeea42d91ff6ead5c2d49db2b88de66c45c2fe874c8ec03eb9b4ceb3a533d"},

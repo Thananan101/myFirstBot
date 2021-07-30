@@ -94,6 +94,21 @@ async def poom(ctx):
 async def tee(ctx):
   await ctx.message.channel.send(bTee[randrange(len(bTee))])
 
+@client.command(pass_context = True)
+async def sto(ctx):
+  await ctx.message.channel.send("https://us02web.zoom.us/j/84507102474?fbclid=IwAR31Fcy6_iEj9I2Ol6EsTowxlYs1lLjN1PW9di_Vy4_a0b5HKXFn2uruZBU#success รหัส 804401")
+
+@client.command(pass_context = True, aliases=["com-net"])
+async def comnet(ctx):
+  await ctx.message.channel.send("https://kku-th.zoom.us/j/9385720886?pwd=b1hRcDR2QUxUM2w1emhNZkZLWUtEZz09")
+
+@client.command(pass_context = True, aliases=["db", "data"])
+async def database(ctx):
+  await ctx.message.channel.send("https://kku-th.zoom.us/j/93397687549?pwd=QWNqSG03T0orejVWS1ZrK1ZrdEpJZz09")
+
+
+
+
 @client.command(pass_context = True, aliases=["p", "pl"])
 async def play(ctx, url:str):
 
