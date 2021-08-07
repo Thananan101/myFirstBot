@@ -14,6 +14,10 @@ from datetime import datetime   #To set date and time
 
 from os import system
 
+import imaplib
+import email
+
+from readEmail import getDBZoomLink
 
 
 from google_trans_new import google_translator  
@@ -102,11 +106,12 @@ async def sto(ctx):
 async def comnet(ctx):
   await ctx.message.channel.send("https://kku-th.zoom.us/j/9385720886?pwd=b1hRcDR2QUxUM2w1emhNZkZLWUtEZz09")
 
-@client.command(pass_context = True, aliases=["db", "data"])
-async def database(ctx):
-  await ctx.message.channel.send("https://kku-th.zoom.us/j/93397687549?pwd=QWNqSG03T0orejVWS1ZrK1ZrdEpJZz09")
 
 
+
+@client.command(pass_context = True, aliases=["AI"])
+async def ANN(ctx):
+  await ctx.message.channel.send("https://kku-th.zoom.us/j/91250200893?pwd=NnNDUzNkYmpDZTNEbFJESzBFREplZz09")
 
 
 @client.command(pass_context = True, aliases=["p", "pl"])
@@ -236,6 +241,13 @@ def playSong(ctx, url):
 def is_connected(ctx):
     voice_client = get(client.voice_clients, guild=ctx.guild)
     return 
+
+@client.command(pass_context = True, aliases=["database"])
+async def db(ctx):
+  link = getDBZoomLink()
+  await ctx.message.channel.send(link)
+
+
 
 
 
