@@ -1,3 +1,4 @@
+#techgeekbuzz.com/how-to-read-emails-in-python/
 import imaplib
 import email
 
@@ -11,8 +12,8 @@ app_password= "yhljrlhftfehlsvp"
 gmail_host= 'imap.gmail.com'
 
 def getDBZoomLink():
-    #techgeekbuzz.com/how-to-read-emails-in-python/
-    #modules
+  
+
 
 
     #set connection

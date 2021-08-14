@@ -18,13 +18,15 @@ import imaplib
 import email
 
 from readEmail import getDBZoomLink
-
+import levelsys
 
 from google_trans_new import google_translator  
 
 TOKEN = ('ODQ5OTg3ODM5Mjc3NzkzMjgw.YLjK3A.AA6ZPnjXHXUe4k0x_oiYNqnqq4Y')
 
-client = commands.Bot(command_prefix = '$')
+cogs = [levelsys]
+
+client = commands.Bot(command_prefix = '$', Intents=discord.Intents.all())
 
 bPuen = ["ไอ่ปืนมันไก่กรู๊กกก", "น้องเกิ๊นน", "กระจอก", "ขี้เมา", "เด็กเหี้ย"]
 bLung = ["ไอ้สัสลุง หัดใช้สมองบ้างนะไอ้เหี้ยย", "7 ปีละนะไอ้สัส เมื่อไหร่จะย้ายออกจากข้างบ้านกุซักที"]
@@ -33,6 +35,7 @@ bTee = ["ไม่มีคอนโดมาเอากับพี่ <:Tee_s
 @client.event
 async def on_ready():
   print('we have logged in as {0.user}'.format(client))
+  levelsys.setup(client)
 
 
 
@@ -97,6 +100,7 @@ async def poom(ctx):
 @client.command(pass_context = True, aliases=["ที"])
 async def tee(ctx):
   await ctx.message.channel.send(bTee[randrange(len(bTee))])
+  await ctx.message.channel.send("<:T-LUX:875998146134679553>")
 
 @client.command(pass_context = True)
 async def sto(ctx):
@@ -106,10 +110,15 @@ async def sto(ctx):
 async def comnet(ctx):
   await ctx.message.channel.send("https://kku-th.zoom.us/j/9385720886?pwd=b1hRcDR2QUxUM2w1emhNZkZLWUtEZz09")
 
+@client.command(pass_context = True, aliases=["comarc", "comarch"])
+async def comarchitecture(ctx):
+  await ctx.message.channel.send(" https://meet.google.com/mex-wnuw-nfr")
 
+@client.command(pass_context = True, aliases=["micro"])
+async def microprocessors(ctx):
+  await ctx.message.channel.send("https://meet.google.com/jca-wghe-ygf")
 
-
-@client.command(pass_context = True, aliases=["AI"])
+@client.command(pass_context = True, aliases=["AI", "ann"])
 async def ANN(ctx):
   await ctx.message.channel.send("https://kku-th.zoom.us/j/91250200893?pwd=NnNDUzNkYmpDZTNEbFJESzBFREplZz09")
 
