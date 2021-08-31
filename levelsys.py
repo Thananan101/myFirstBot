@@ -38,7 +38,7 @@ class levelsys(commands.Cog):
       stats = levelling.find_one({"id": ctx.author.id})
       if stats is None:
         embed = discord.Embed(description="You haven't sent any messages, no rank for you!!")
-        await ctx.channel.sned(embed=embed)
+        await ctx.message.channel.send(embed=embed)
       else:
         xp = stats["xp"]
         lvl = 0

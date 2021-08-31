@@ -31,3 +31,4 @@ def timezoneToTH(alarm_time):
   return str(alarm_hour) + ":" + alarm_min + ":" + alarm_sec + alarm_period
 
 
+  

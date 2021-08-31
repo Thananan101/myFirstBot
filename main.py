@@ -8,7 +8,9 @@ from discord.ext import commands
 from discord import FFmpegPCMAudio
 from discord.utils import get
 import youtube_dl
+
 from alarm import *
+
 
 from datetime import datetime   #To set date and time
 
@@ -22,7 +24,10 @@ import levelsys
 
 from google_trans_new import google_translator  
 
-TOKEN = ('ODQ5OTg3ODM5Mjc3NzkzMjgw.YLjK3A.AA6ZPnjXHXUe4k0x_oiYNqnqq4Y')
+my_secret = os.environ['TOKEN']
+
+TOKEN = (my_secret)
+
 
 cogs = [levelsys]
 
@@ -31,6 +36,7 @@ client = commands.Bot(command_prefix = '$', Intents=discord.Intents.all())
 bPuen = ["ไอ่ปืนมันไก่กรู๊กกก", "น้องเกิ๊นน", "กระจอก", "ขี้เมา", "เด็กเหี้ย"]
 bLung = ["ไอ้สัสลุง หัดใช้สมองบ้างนะไอ้เหี้ยย", "7 ปีละนะไอ้สัส เมื่อไหร่จะย้ายออกจากข้างบ้านกุซักที"]
 bTee = ["ไม่มีคอนโดมาเอากับพี่ <:Tee_smile:850487711420645386>", "ผมไม่ใช่ทีธรรมดา ผมอะทีรัก <:Tee_smile:850487711420645386>"]
+bGun = ["ซักหมัดปะมึงอะ ไอ่บูม <:BGummud:841699099249344542>", "มาเดี๋ยวซับน้ำตาให้ แต่ซับด้วยหมัดกูเนี่ยแหละ <:BGummud:841699099249344542>", " อะไรล่ะน้องเอ้ว <:BGummud:841699099249344542>"]
 
 @client.event
 async def on_ready():
@@ -100,15 +106,23 @@ async def poom(ctx):
 @client.command(pass_context = True, aliases=["ที"])
 async def tee(ctx):
   await ctx.message.channel.send(bTee[randrange(len(bTee))])
-  await ctx.message.channel.send("<:T-LUX:875998146134679553>")
+
+@client.command(pass_context = True, aliases=["บก", "บิ๊กกัน", "biggun"])
+async def bg(ctx):
+  await ctx.message.channel.send(bGun[randrange(len(bGun))])
+
 
 @client.command(pass_context = True)
 async def sto(ctx):
   await ctx.message.channel.send("https://us02web.zoom.us/j/84507102474?fbclid=IwAR31Fcy6_iEj9I2Ol6EsTowxlYs1lLjN1PW9di_Vy4_a0b5HKXFn2uruZBU#success รหัส 804401")
 
 @client.command(pass_context = True, aliases=["com-net"])
-async def comnet(ctx):
-  await ctx.message.channel.send("https://kku-th.zoom.us/j/9385720886?pwd=b1hRcDR2QUxUM2w1emhNZkZLWUtEZz09")
+async def comnet(ctx, QA = "none"):
+  Q_A = ["-a", "a", "QA", "Q&A"]
+  if QA in Q_A :
+    await ctx.message.channel.send("https://answerkku.hadwan.com/index?fbclid=IwAR17mQWmIo62KeO9-W_NNhSv3ijguCs2Q8IHQkwLYNgScIyFhs4cGzUHP2w")
+  else:
+    await ctx.message.channel.send("https://kku-th.zoom.us/j/9385720886?pwd=b1hRcDR2QUxUM2w1emhNZkZLWUtEZz09")
 
 @client.command(pass_context = True, aliases=["comarc", "comarch"])
 async def comarchitecture(ctx):
@@ -189,6 +203,21 @@ async def alarm(ctx, alarm_time):
                         await channel.connect()
                         playSong(ctx, "https://www.youtube.com/watch?v=hA_0cI1BJhs")
                       break
+
+@client.command(pass_context = True)
+async def time(ctx):
+  now = datetime.now()
+  current_hour = int(now.strftime("%H")) + 7
+  current_min = now.strftime("%M")
+  current_sec = now.strftime("%S")
+  current_period = now.strftime("%p")
+  if current_hour >= 24:
+    current_hour -= 24
+    if current_hour < 10:
+      current_hour = "0" + str(current_hour)
+  print("ขณะนี้เวลา: "+ str(current_hour) + ":" + str(current_min) + ":" + str(current_sec))
+  await ctx.message.channel.send("ขณะนี้เวลา: "+ str(current_hour) + ":" + str(current_min) + ":" + str(current_sec))
+
 
 
 @client.command(pass_context = True)
