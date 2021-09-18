@@ -156,12 +156,16 @@ async def play(ctx, url:str):
   FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
   if not voice_client.is_playing():
-    with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
-      info = ydl.extract_info(url, download=False)
-      URL = info['formats'][0]['url']
+    try:
+      with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
+        info = ydl.extract_info(url, download=False)
+        URL = info['formats'][0]['url']
 
-    voice_client.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
-    voice_client.is_playing()
+      voice_client.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
+      voice_client.is_playing()
+    except:
+        await ctx.message.channel.send("เอ่ออระบบเน่าว่ะน่าจะอัพเดทไดรเวอร์อยู่ โปรดติดต่อ TenenX")
+    
   else:
     await ctx.message.channel.send("ร้องเพลงอยู่ไอ้สัส ไม่ว่างโว้ยยย")
     return
@@ -204,7 +208,7 @@ async def alarm(ctx, alarm_time):
                         playSong(ctx, "https://www.youtube.com/watch?v=hA_0cI1BJhs")
                       break
 
-@client.command(pass_context = True)
+@client.command(pass_context = True, aliases=["t", "เวลา"])
 async def time(ctx):
   now = datetime.now()
   current_hour = int(now.strftime("%H")) + 7
