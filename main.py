@@ -11,7 +11,7 @@ import youtube_dl
 
 from alarm import *
 
-
+          
 from datetime import datetime   #To set date and time
 
 from os import system
@@ -21,6 +21,7 @@ import email
 
 from readEmail import getDBZoomLink
 import levelsys
+import music
 
 from google_trans_new import google_translator  
 
@@ -42,11 +43,12 @@ bGun = ["ซักหมัดปะมึงอะ ไอ่บูม <:BGummud
 async def on_ready():
   print('we have logged in as {0.user}'.format(client))
   levelsys.setup(client)
+  music.setup(client)
 
 
 
-@client.command(pass_context = True, aliases=["j"])
-async def join(ctx):
+@client.command(pass_context = True)
+async def joina(ctx):
   voice_client = discord.utils.get(client.voice_clients, guild=ctx.guild)
   if voice_client == None:
     if (ctx.author.voice):
@@ -58,8 +60,8 @@ async def join(ctx):
   
 
 
-@client.command(pass_context = True, aliases=["l", "dc"])
-async def leave(ctx):
+@client.command(pass_context = True)
+async def leavea(ctx):
   if (ctx.voice_client):
     await ctx.voice_client.disconnect()
     await ctx.send("ไปละ บัยยย")
@@ -137,38 +139,6 @@ async def ANN(ctx):
   await ctx.message.channel.send("https://kku-th.zoom.us/j/91250200893?pwd=NnNDUzNkYmpDZTNEbFJESzBFREplZz09")
 
 
-@client.command(pass_context = True, aliases=["p", "pl"])
-async def play(ctx, url:str):
-
-  voice_client = discord.utils.get(client.voice_clients, guild=ctx.guild)
-  if voice_client == None:
-    if (ctx.author.voice):
-      channel = ctx.author.voice.channel
-      await channel.connect()
-      await ctx.send("เข้ามาแล้วขอรับนายท่าน มีอะไรให้รับใช้")
-    else:
-      await ctx.message.channel.send("เข้าซักห้องก่อนค่อยเรียกกู ไอ่ฟาย")
-    
-  channel = ctx.author.voice.channel
-  voice_client = get(client.voice_clients, guild=ctx.guild)
-
-  YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': 'True'}
-  FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-
-  if not voice_client.is_playing():
-    try:
-      with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
-        info = ydl.extract_info(url, download=False)
-        URL = info['formats'][0]['url']
-
-      voice_client.play(discord.FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
-      voice_client.is_playing()
-    except:
-        await ctx.message.channel.send("เอ่ออระบบเน่าว่ะน่าจะอัพเดทไดรเวอร์อยู่ โปรดติดต่อ TenenX")
-    
-  else:
-    await ctx.message.channel.send("ร้องเพลงอยู่ไอ้สัส ไม่ว่างโว้ยยย")
-    return
 
 #บอทเข้าห้องไม่ได้ติด channel.connect()
 
@@ -222,37 +192,6 @@ async def time(ctx):
   print("ขณะนี้เวลา: "+ str(current_hour) + ":" + str(current_min) + ":" + str(current_sec))
   await ctx.message.channel.send("ขณะนี้เวลา: "+ str(current_hour) + ":" + str(current_min) + ":" + str(current_sec))
 
-
-
-@client.command(pass_context = True)
-async def pause(ctx):
-  voice = get (client.voice_clients, guild = ctx.guild)
-  
-  if voice and voice.is_playing():
-    voice.pause()
-    await ctx.message.channel.send("music paused")
-  else:
-    await ctx.message.channel.send("music not playing failed pause")
-
-@client.command(pass_context = True)
-async def resume(ctx):
-  voice = get (client.voice_clients, guild = ctx.guild)
-
-  if voice and voice.is_paused():
-    voice.resume()
-    await ctx.send("resumed music")
-  else:
-    await ctx.send("music is not paused")
-
-@client.command(pass_context = True)
-async def skip(ctx):
-  voice = get (client.voice_clients, guild = ctx.guild)
-  
-  if voice and voice.is_playing():
-    voice.stop()
-    await ctx.message.channel.send("music stopped")
-  else:
-    await ctx.message.channel.send("music is not playing failed to stop")
 
 
 @client.command(pass_context = True, aliases=['tr', 'แปล'])
