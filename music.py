@@ -189,6 +189,7 @@ class VoiceState:
         self.skip_votes = set()
 
         self.audio_player = bot.loop.create_task(self.audio_player_task())
+        self.exists = True
 
     def __del__(self):
         self.audio_player.cancel()
@@ -227,7 +228,8 @@ class VoiceState:
                         self.current = await self.songs.get()
                 except asyncio.TimeoutError:
                     self.bot.loop.create_task(self.stop())
-                    return
+                    self.exists = False
+                    return 
 
             self.current.source.volume = self._volume
             self.voice.play(self.current.source, after=self.play_next_song)
@@ -262,7 +264,7 @@ class Music(commands.Cog):
 
     def get_voice_state(self, ctx: commands.Context):
         state = self.voice_states.get(ctx.guild.id)
-        if not state:
+        if not state or not state.exists:
             state = VoiceState(self.bot, ctx)
             self.voice_states[ctx.guild.id] = state
 
@@ -326,7 +328,7 @@ class Music(commands.Cog):
             await ctx.voice_client.disconnect()
           except:
             pass
-        await ctx.voice_state.stop()
+        ctx.voice_state.songs.clear()
         del self.voice_states[ctx.guild.id]
 
     @commands.command(name='volume')
@@ -377,7 +379,7 @@ class Music(commands.Cog):
     @commands.command(name='skip')
     async def _skip(self, ctx: commands.Context):
         """Vote to skip a song. The requester can automatically skip.
-        3 skip votes are needed for the song to be skipped.
+        2 skip votes are needed for the song to be skipped.
         """
 
         if not ctx.voice_state.is_playing:
@@ -392,11 +394,11 @@ class Music(commands.Cog):
             ctx.voice_state.skip_votes.add(voter.id)
             total_votes = len(ctx.voice_state.skip_votes)
 
-            if total_votes >= 3:
+            if total_votes >= 2:
                 await ctx.message.add_reaction('⏭')
                 ctx.voice_state.skip()
             else:
-                await ctx.send('Skip vote added, currently at **{}/3**'.format(total_votes))
+                await ctx.send('Skip vote added, currently at **{}/2**'.format(total_votes))
 
         else:
             await ctx.send('You have already voted to skip this song.')
@@ -494,7 +496,7 @@ class Music(commands.Cog):
 
                 await ctx.voice_state.songs.put(song)
                 await ctx.send('Enqueued {}'.format(str(source)))
-
+            print(ctx.voice_state.songs)
     @_join.before_invoke
     @_play.before_invoke
     async def ensure_voice_state(self, ctx: commands.Context):

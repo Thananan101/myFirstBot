@@ -158,6 +158,8 @@ async def alarm(ctx, alarm_time):
     alarm_min = alarm_time[3:5]
     alarm_sec = alarm_time[6:8]
     alarm_period = alarm_time[8:].upper()
+    seconds_hms = [3600, 60, 1] 
+
 
     while True:
       now = datetime.now()
