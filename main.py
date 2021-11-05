@@ -10,7 +10,7 @@ from discord.utils import get
 import youtube_dl
 
 from alarm import *
-
+from discord_slash import cog_ext, SlashContext, SlashCommand
           
 from datetime import datetime   #To set date and time
 
@@ -22,6 +22,7 @@ import email
 from readEmail import getDBZoomLink
 import levelsys
 import music
+import slash
 
 from google_trans_new import google_translator  
 
@@ -30,9 +31,10 @@ my_secret = os.environ['TOKEN']
 TOKEN = (my_secret)
 
 
-cogs = [levelsys]
+
 
 client = commands.Bot(command_prefix = '$', Intents=discord.Intents.all())
+
 
 bPuen = ["ไอ่ปืนมันไก่กรู๊กกก", "น้องเกิ๊นน", "กระจอก", "ขี้เมา", "เด็กเหี้ย"]
 bLung = ["ไอ้สัสลุง หัดใช้สมองบ้างนะไอ้เหี้ยย", "7 ปีละนะไอ้สัส เมื่อไหร่จะย้ายออกจากข้างบ้านกุซักที"]
@@ -42,9 +44,10 @@ bGun = ["ซักหมัดปะมึงอะ ไอ่บูม <:BGummud
 @client.event
 async def on_ready():
   print('we have logged in as {0.user}'.format(client))
+  await client.change_presence(activity=discord.Streaming(name="ตอนไหนจะเริ่มวะ", url='https://www.twitch.tv/tenenx'))
   levelsys.setup(client)
   music.setup(client)
-
+  slash.setup(client)
 
 
 @client.command(pass_context = True)
@@ -57,7 +60,7 @@ async def joina(ctx):
       await ctx.send("เข้ามาแล้วขอรับนายท่าน มีอะไรให้รับใช้")
     else:
       await ctx.message.channel.send("เข้าซักห้องก่อนค่อยเรียกกู ไอ่ฟาย")
-  
+
 
 
 @client.command(pass_context = True)
