@@ -192,13 +192,14 @@ async def time(ctx):
   current_hour = int(now.strftime("%-H")) + 7
   current_min = now.strftime("%M")
   current_sec = now.strftime("%S")
-  current_period = now.strftime("%p")
+  current_period = "AM" if now.strftime("%p")=="PM" else "PM"
+
   if current_hour >= 24:
     current_hour -= 24
     if current_hour < 10:
       current_hour = "0" + str(current_hour)
-  print("ขณะนี้เวลา: "+ str(current_hour) + ":" + str(current_min) + ":" + str(current_sec))
-  await ctx.message.channel.send("ขณะนี้เวลา: "+ str(current_hour) + ":" + str(current_min) + ":" + str(current_sec))
+  print("ขณะนี้เวลา: {}:{}:{} {}".format(current_hour, current_min, current_sec, current_period))
+  await ctx.message.channel.send("ขณะนี้เวลา: {}:{}:{} {}".format(current_hour, current_min, current_sec, current_period))
 
 
 #unuseable
