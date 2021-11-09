@@ -13,19 +13,13 @@ gmail_host= 'imap.gmail.com'
 
 def getDBZoomLink():
   
-
-
-
     #set connection
     mail = imaplib.IMAP4_SSL(gmail_host)
-
-    #login
     mail.login(username, app_password)
 
-    #select inbox
     mail.select("INBOX")
 
-    #select specific mails
+    #Search for keyword
     _, selected_mails = mail.search(None, '(SUBJECT "Database Systems class")')
 
     for num in selected_mails[0].split():
