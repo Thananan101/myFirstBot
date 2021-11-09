@@ -1,12 +1,13 @@
 #techgeekbuzz.com/how-to-read-emails-in-python/
 import imaplib
 import email
+import os
 
 #credentials
 username ="thananan_pi@kkumail.com"
 
 #generated app password
-app_password= "yhljrlhftfehlsvp"
+app_password= os.environ['PASSWORD']
 
 # https://www.systoolsgroup.com/imap/
 gmail_host= 'imap.gmail.com'

@@ -27,10 +27,7 @@ import slash
 from google_trans_new import google_translator  
 
 my_secret = os.environ['TOKEN']
-
 TOKEN = (my_secret)
-
-
 
 
 client = commands.Bot(command_prefix = '$', Intents=discord.Intents.all())
@@ -239,4 +236,4 @@ async def db(ctx):
 
 keep_alive()
 
-client.run('ODQ5OTg3ODM5Mjc3NzkzMjgw.YLjK3A.AA6ZPnjXHXUe4k0x_oiYNqnqq4Y')
+client.run(TOKEN)
