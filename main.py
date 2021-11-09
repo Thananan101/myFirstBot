@@ -12,7 +12,7 @@ import youtube_dl
 from alarm import *
 from discord_slash import cog_ext, SlashContext, SlashCommand
           
-from datetime import datetime   #To set date and time
+from datetime import datetime   
 
 from os import system
 
@@ -24,7 +24,10 @@ import levelsys
 import music
 import slash
 
-from google_trans_new import google_translator  
+import asyncio
+
+import googletrans  
+from googletrans import Translator
 
 my_secret = os.environ['TOKEN']
 TOKEN = (my_secret)
@@ -144,6 +147,7 @@ async def ANN(ctx):
 
 @client.command(pass_context = True)
 async def alarm(ctx, alarm_time):
+  now = datetime.now()
   fk_time = alarm_time
   validate = validate_time(alarm_time)
   alarm_time = timezoneToTH(alarm_time)
@@ -151,39 +155,41 @@ async def alarm(ctx, alarm_time):
   print(validate)
   print(len(alarm_time))
   if validate != "ok":
-    await ctx.message.channel.send("ใส่เวลาแบบ HH:MM:SS AM/PM นะครับขอบคุณครับ")
+    await ctx.message.channel.send("ใส่เวลาแบบ HH:MM:SSAM/PM นะครับขอบคุณครับ")
   else:
     await ctx.message.channel.send("Setting alarm for " + fk_time)
-    alarm_hour = alarm_time[0:2]
-    alarm_min = alarm_time[3:5]
-    alarm_sec = alarm_time[6:8]
+    alarm_hour = int(alarm_time[0:2])
+    alarm_min = int(alarm_time[3:5])
+    alarm_sec = int(alarm_time[6:8])
     alarm_period = alarm_time[8:].upper()
     seconds_hms = [3600, 60, 1] 
+    print(alarm_hour)
+    print(alarm_min)
+    print(alarm_sec)
+    print(alarm_period)
+    current_hour = int(now.strftime("%I"))
+    current_min = int(now.strftime("%M"))
+    current_sec = int(now.strftime("%S"))
+    current_period = now.strftime("%p")
+    diffH = alarm_hour - current_hour
+    diffM = alarm_min - current_min
+    diffS = alarm_sec - current_sec
+    diffP = int(alarm_period != current_period)
+    diffT = diffS + diffM*60 + diffH*60*60 + diffP*60*60*12
+    print(diffT)
 
+    await asyncio.sleep(diffT)
+    await ctx.message.channel.send("ไปนอนได้แล้วน้องๆ   เดี๋ยวโดนเขกหัวน้าาาาาาาา")
+    if (ctx.author.voice):
+      channel = ctx.author.voice.channel
+      await channel.connect()
+      playSong(ctx, "https://www.youtube.com/watch?v=hA_0cI1BJhs")      
 
-    while True:
-      now = datetime.now()
-
-      current_hour = now.strftime("%I")
-      current_min = now.strftime("%M")
-      current_sec = now.strftime("%S")
-      current_period = now.strftime("%p")
-
-      if alarm_period == current_period:
-          if alarm_hour == current_hour:
-              if alarm_min == current_min:
-                  if alarm_sec == current_sec:
-                      await ctx.message.channel.send("ไปนอนได้แล้วน้องๆ   เดี๋ยวโดนเขกหัวน้าาาาาาาา")
-                      if (ctx.author.voice):
-                        channel = ctx.author.voice.channel
-                        await channel.connect()
-                        playSong(ctx, "https://www.youtube.com/watch?v=hA_0cI1BJhs")
-                      break
 
 @client.command(pass_context = True, aliases=["t", "เวลา"])
 async def time(ctx):
   now = datetime.now()
-  current_hour = int(now.strftime("%H")) + 7
+  current_hour = int(now.strftime("%-H")) + 7
   current_min = now.strftime("%M")
   current_sec = now.strftime("%S")
   current_period = now.strftime("%p")
@@ -195,12 +201,13 @@ async def time(ctx):
   await ctx.message.channel.send("ขณะนี้เวลา: "+ str(current_hour) + ":" + str(current_min) + ":" + str(current_sec))
 
 
-
+#unuseable
 @client.command(pass_context = True, aliases=['tr', 'แปล'])
 async def translate(ctx, *, args):
   text = ' '.join(args)
-  translator = google_translator()  
-  txt_translated = translator.translate(args, lang_tgt='th')
+  translator = Translator()
+  lang = translator.detect(text).lang
+  txt_translated = translator.translate(args, src=lang, dest='th')
   await ctx.send(txt_translated)
 
 
