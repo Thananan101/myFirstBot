@@ -61,6 +61,9 @@ async def joina(ctx):
     else:
       await ctx.message.channel.send("เข้าซักห้องก่อนค่อยเรียกกู ไอ่ฟาย")
 
+@client.command(pass_context = True)
+async def check(ctx, who):
+  print(who[3:-1])
 
 
 @client.command(pass_context = True)
