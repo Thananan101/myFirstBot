@@ -4,6 +4,7 @@ from discord.ext import commands
 from pymongo import MongoClient
 from random import randrange
 import asyncio
+import time
 
 cluster = MongoClient("mongodb+srv://feelsgoodnow:Q2ES0RzLqhpR6pzU@depresseddiscordbot.1fkbd.mongodb.net/test?retryWrites=true&w=majority")
 
@@ -22,7 +23,7 @@ class levelsys(commands.Cog):
       stats = levelling.find_one({"id" : message.author.id})
       if not message.author.bot:
         if stats is None:
-          newuser = {"id" : message.author.id, "xp" : 0, "HPcap": 200, "Alive":True, "level":1, "HP": 200, "CD":False}
+          newuser = {"id" : message.author.id, "xp" : 0, "HPcap": 200, "Alive":True, "level":1, "HP": 200, "CD":0, "prevSkillTime":0}
           levelling.insert_one(newuser)
         else:
           xp = stats["xp"] + 5
@@ -84,8 +85,8 @@ class levelsys(commands.Cog):
           break
       await ctx.channel.send(embed=embed)
 
-    @commands.command(aliases=["profile", "pro"])
-    async def Profile(self, ctx):
+    @commands.command(aliases=["profile", "pro", "stat"])
+    async def status(self, ctx):
       player = levelling.find_one({"id": ctx.author.id})
       if player is None:
         embed = discord.Embed(description="You haven't sent any messages, no rank for you!!")
@@ -94,6 +95,7 @@ class levelsys(commands.Cog):
         xp = player['xp']
         lvl = player['level']
         HP = player['HP']
+        xp -= ((50*((lvl-1)**2)) + (50*(lvl-1)))
         HPcap = player['HPcap']
         boxes = int((HP/HPcap)*20)
         embed = discord.Embed(title="{}'s level stats".format(ctx.author.name))
@@ -111,7 +113,7 @@ class levelsys(commands.Cog):
       attacked = punch.name
       puncher = levelling.find_one({"id": ctx.author.id})
       punched = levelling.find_one({"id": punch.id})
-      if puncher['CD'] == False:
+      if True:
         dmg = randrange(100)
         hp = punched['HP'] - dmg
         if hp > 0:
@@ -134,10 +136,30 @@ class levelsys(commands.Cog):
       else:
         await ctx.channel.send("ใจเย็น ๆ ดิ๊มึงติดคูลดาวน์อยู่ กำหมัดรอไว้เลยเดี๋ยวได้ต่อยแน่")
         
-      
-      
+    @commands.command(aliases=["สั่งฆ่า"])
+    async def kill(self, ctx, punch: discord.Member):
+      attacker = ctx.author.name
+      attacked = punch.name
+      puncher = levelling.find_one({"id": ctx.author.id})
+      punched = levelling.find_one({"id": punch.id})
+      if ctx.author.id == 313326050090156032:
+          await ctx.channel.send("{} สั่งฆ่า {} ด้วยความแรง 999999999 damge".format(attacker, attacked))
+          await ctx.channel.send("{}'s dead. RIP กากเกิ๊นนน".format(attacked))
+          levelling.update_one({"id":punched['id']}, {"$set":{"HP":0}})
+          levelling.update_one({"id":punched['id']}, {"$set":{"Alive":False}})
+          levelling.update_one({"id":puncher['id']}, {"$set":{"CD":True}})
+          await asyncio.sleep(300)
+          levelling.update_one({"id":punched['id']}, {"$set":{"Alive":True}})
+          await asyncio.sleep(300)
+          levelling.update_one({"id":puncher['id']}, {"$set":{"CD":False}})
+      else:
+        await ctx.channel.send("ไม่ใช่ GM ใช้ไม่ได้ครับน้อง ๆ")
 
-
-
+    @commands.command()
+    async def resetHP(self, ctx):
+      if ctx.author.id == 313326050090156032:
+        levelling.update_one({}, {"$set": {"HP":200}})
+      else:
+        await ctx.channel.send("คำสั่งสำหรับ GM ไว้รีเซตเลือดเฉยๆครับ")
 def setup(client):
   client.add_cog(levelsys(client))
