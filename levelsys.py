@@ -24,8 +24,7 @@ class levelsys(commands.Cog):
       stats = playerDB.find_one({"id" : message.author.id})
       if not message.author.bot:
         if stats is None:
-          newuser = {"id" : message.author.id, "xp" : 0, "HPmax": 200, "Alive":True, "level":1, "HP": 200, "CD":0, "prevSkillTime":0}
-          playerDB.insert_one(newuser)
+          self.newplayer(message.author)
           stats = playerDB.find_one({"id" : message.author.id})
         else:
           xp = stats["xp"] + 5
@@ -90,6 +89,9 @@ class levelsys(commands.Cog):
     @commands.command(aliases=["profile", "pro", "stat"])
     async def status(self, ctx):
       player = playerDB.find_one({"id": ctx.author.id})
+      self.hpRegen(player)
+      self.isAlive(player)
+      player = playerDB.find_one({"id": ctx.author.id})
       if player is None:
         embed = discord.Embed(description="You haven't sent any messages, no rank for you!!")
         await ctx.message.channel.send(embed=embed)
@@ -100,11 +102,12 @@ class levelsys(commands.Cog):
         xp -= ((50*((lvl-1)**2)) + (50*(lvl-1)))
         HPmax = player['HPmax']
         boxes = int((HP/HPmax)*20)
-        embed = discord.Embed(title="{}'s level stats".format(ctx.author.name))
+        embed = discord.Embed(title="{}'s stats".format(ctx.author.name))
         embed.add_field(name="Name", value=ctx.author.mention, inline = True)
         embed.add_field(name="XP", value=f"{xp}/{int(200*((1/2)*lvl))}", inline = True)
         embed.add_field(name="level", value=f"{lvl}", inline = True)
         embed.add_field(name="HP", value=f"{HP}/{HPmax}", inline = True)
+        embed.add_field(name="Alive?", value=f"{player['alive']}", inline = True)
         embed.add_field(name="HP bar", value=boxes * ":red_square:" + (20-boxes) * ":white_large_square:", inline = False)
         embed.set_thumbnail(url=ctx.author.avatar_url)
         await ctx.channel.send(embed=embed)
@@ -116,32 +119,88 @@ class levelsys(commands.Cog):
       puncher = playerDB.find_one({"id": ctx.author.id})
       punched = playerDB.find_one({"id": punch.id})
       if punched is None:
-          newuser = {"id" : punch.id, "xp" : 0, "HPmax": 200, "level":1, "HP": 200, "CD":0, "prevSkillTime":datetime.datetime.now().replace(microsecond=0)}
-          playerDB.insert_one(newuser)
-      
+          self.newplayer(punch)
+          punched = playerDB.find_one({"id": punch.id})
+      self.hpRegen(puncher)
+      self.hpRegen(punched)
+      puncher = playerDB.find_one({"id": ctx.author.id})
+      punched = playerDB.find_one({"id": punch.id})
+      if not self.isAlive(puncher):
+        await ctx.channel.send("คุณมึงตายอยู่ครับ คนตายก็อยู่นิ่งๆดิ๊")
+        return
+      if not self.isAlive(punched):
+        await ctx.channel.send("คุณ {} เขาตายอยู่นะครับ รบกวนอย่าซ้ำศพนะครับเพื่อสังคมที่ดี ^^".format(attacked))
+        return 
       if self.isCD(puncher['prevSkillTime'], puncher['CD']):
         dmg = randrange(100)
         if punched['HP'] > dmg:
           hp = punched['HP'] - dmg
-          playerDB.update_one({'id':puncher['id']}, {'$set':{'HP':hp}})
+          playerDB.update_one({'id':punched['id']}, {'$set':{'HP':hp}})
           await ctx.channel.send("{} ต่อย {} ด้วยความแรง {} damge".format(attacker, attacked, dmg))
           await ctx.channel.send("{}'s HP: {}".format(attacked, hp)) 
         else:
-          playerDB.update_one({'id':puncher['id']}, {'$set':{'HP':0}})
-          await ctx.channel.send("{} สั่งฆ่า {} ด้วยความแรง 999999999 damge".format(attacker, attacked))
+          playerDB.update_one({'id':punched['id']}, {'$set':{'HP':0}})
+          playerDB.update_one({'id':punched['id']}, {'$set':{'alive':False}})
+          playerDB.update_one({'id':punched['id']}, {'$set':{'died':datetime.datetime.now().replace(microsecond=0)}})
+          await ctx.channel.send("{} ต่อยเข้าไปที่หน้าของ {} ด้วยความแรง {} damge".format(attacker, attacked, dmg))
           await ctx.channel.send("{}'s dead. RIP กากเกิ๊นนน".format(attacked))        
 
-        playerDB.update_one({'id':puncher['id']}, {'$set':{'CD':60}})
+        playerDB.update_one({'id':puncher['id']}, {'$set':{'CD':2}})
         playerDB.update_one({'id':puncher['id']}, {'$set':{'prevSkillTime':datetime.datetime.now()}})
       else:
-        await ctx.channel.send('ต่อยไม่ได้')
+        await ctx.channel.send('ใจเย็นๆนะ ยังต่อยไม่ได้ รู้อยากว้อนแต่กำหมัดไว้ก่อน')
     
     def isCD(self, prev, cd):
       now = datetime.datetime.now()
       diff = now - prev
       return True if int(diff.seconds) > cd else False
-      
+    
+    def isAlive(self, player):
+      '''
+      set auto revive time to 10 mins
+      so if player is dead this function will detect if he died for more than 10 mins
+      if yes just revive and give him maxHP
+      '''
+      if not player['alive']:
+        #if player is dead
+        print(player['alive'])
+        now = datetime.datetime.now().replace(microsecond=0)
+        died = player['died']
+        diff = now-died
+        if diff.seconds >= 600:
+          playerDB.update_one({'id': player['id']}, {'$set':{'alive':True}})
+          playerDB.update_one({'id': player['id']}, {'$set':{'HP':player['HPmax']}})
+          playerDB.update_one({'id': player['id']}, {'$set':{'lastRegen':datetime.datetime.now().replace(microsecond=0)}})
+          return True
+        return False
+      else:
+        return True
+
+    def newplayer(self, player):
+      newuser = {"id" : player.id, "xp" : 0, "HPmax": 200, "alive":True, "level":1, "HP": 200, "CD":0, "prevSkillTime":datetime.datetime.now().replace(microsecond=0), 
+      'lastRegen':datetime.datetime.now().replace(microsecond=0), 
+      'died':0}
+      playerDB.insert_one(newuser)
+
+    def hpRegen(self, player):
+      '''
+      For the time being, I'm using hpregen = 10/minutes, which means that if the difference is greater than 1 minute, we heal the player.
+      '''
+      prev = player['lastRegen']
+      now = datetime.datetime.now().replace(microsecond=0)
+      diff = now-prev 
+      if int(diff.seconds/60) < 1:
+        return
+      else:
+        heal = int(diff.seconds/60) * 10
+        if player['HP'] + heal > player['HPmax']:
+          current_hp = player['HPmax']
+        else:
+          current_hp = player['HP'] + heal
+          playerDB.update_one({'id':player['id']}, {'$set':{'HP':current_hp},})
+          playerDB.update_one({'id':player['id']}, {'$set':{'lastRegen': datetime.datetime.now().replace(microsecond=0)}})
         
+
     @commands.command(aliases=["สั่งฆ่า"])
     async def kill(self, ctx, punch: discord.Member):
       attacker = ctx.author.name
