@@ -145,7 +145,6 @@ async def ANN(ctx):
   await ctx.message.channel.send("https://kku-th.zoom.us/j/91250200893?pwd=NnNDUzNkYmpDZTNEbFJESzBFREplZz09")
 
 
-
 #บอทเข้าห้องไม่ได้ติด channel.connect()
 
 @client.command(pass_context = True)

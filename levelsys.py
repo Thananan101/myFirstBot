@@ -90,7 +90,7 @@ class levelsys(commands.Cog):
     async def status(self, ctx):
       player = playerDB.find_one({"id": ctx.author.id})
       self.hpRegen(player)
-      self.isAlive(player)
+      self.reviveDeeMai(player)
       player = playerDB.find_one({"id": ctx.author.id})
       if player is None:
         embed = discord.Embed(description="You haven't sent any messages, no rank for you!!")
@@ -118,13 +118,19 @@ class levelsys(commands.Cog):
       attacked = punch.name
       puncher = playerDB.find_one({"id": ctx.author.id})
       punched = playerDB.find_one({"id": punch.id})
+      if puncher is None:
+          self.newplayer(punch)
+          punched = playerDB.find_one({"id": punch.id})
       if punched is None:
           self.newplayer(punch)
           punched = playerDB.find_one({"id": punch.id})
       self.hpRegen(puncher)
       self.hpRegen(punched)
+      self.reviveDeeMai(punched)
+      self.reviveDeeMai(puncher)
       puncher = playerDB.find_one({"id": ctx.author.id})
       punched = playerDB.find_one({"id": punch.id})
+
       if not self.isAlive(puncher):
         await ctx.channel.send("คุณมึงตายอยู่ครับ คนตายก็อยู่นิ่งๆดิ๊")
         return
@@ -132,6 +138,7 @@ class levelsys(commands.Cog):
         await ctx.channel.send("คุณ {} เขาตายอยู่นะครับ รบกวนอย่าซ้ำศพนะครับเพื่อสังคมที่ดี ^^".format(attacked))
         return 
       if self.isCD(puncher['prevSkillTime'], puncher['CD']):
+        print(f'{attacker} ต่อย {attacked}')
         dmg = randrange(100)
         if punched['HP'] > dmg:
           hp = punched['HP'] - dmg
@@ -145,7 +152,7 @@ class levelsys(commands.Cog):
           await ctx.channel.send("{} ต่อยเข้าไปที่หน้าของ {} ด้วยความแรง {} damge".format(attacker, attacked, dmg))
           await ctx.channel.send("{}'s dead. RIP กากเกิ๊นนน".format(attacked))        
 
-        playerDB.update_one({'id':puncher['id']}, {'$set':{'CD':2}})
+        playerDB.update_one({'id':puncher['id']}, {'$set':{'CD':20}})
         playerDB.update_one({'id':puncher['id']}, {'$set':{'prevSkillTime':datetime.datetime.now()}})
       else:
         await ctx.channel.send('ใจเย็นๆนะ ยังต่อยไม่ได้ รู้อยากว้อนแต่กำหมัดไว้ก่อน')
@@ -156,11 +163,12 @@ class levelsys(commands.Cog):
       return True if int(diff.seconds) > cd else False
     
     def isAlive(self, player):
-      '''
-      set auto revive time to 10 mins
-      so if player is dead this function will detect if he died for more than 10 mins
-      if yes just revive and give him maxHP
-      '''
+      if not player['alive']:
+        return False
+      else:
+        return True
+
+    def reviveDeeMai(self, player):
       if not player['alive']:
         #if player is dead
         print(player['alive'])
@@ -168,23 +176,23 @@ class levelsys(commands.Cog):
         died = player['died']
         diff = now-died
         if diff.seconds >= 600:
+          hpmax = player['HPmax']
           playerDB.update_one({'id': player['id']}, {'$set':{'alive':True}})
-          playerDB.update_one({'id': player['id']}, {'$set':{'HP':player['HPmax']}})
+          playerDB.update_one({'id': player['id']}, {'$set':{'HP':hpmax}})
           playerDB.update_one({'id': player['id']}, {'$set':{'lastRegen':datetime.datetime.now().replace(microsecond=0)}})
-          return True
-        return False
-      else:
-        return True
+
 
     def newplayer(self, player):
       newuser = {"id" : player.id, "xp" : 0, "HPmax": 200, "alive":True, "level":1, "HP": 200, "CD":0, "prevSkillTime":datetime.datetime.now().replace(microsecond=0), 
-      'lastRegen':datetime.datetime.now().replace(microsecond=0), 
-      'died':0}
+      "lastRegen":datetime.datetime.now().replace(microsecond=0), 
+      "died":0}
       playerDB.insert_one(newuser)
 
     def hpRegen(self, player):
       '''
       For the time being, I'm using hpregen = 10/minutes, which means that if the difference is greater than 1 minute, we heal the player.
+
+      bug: sometimes it doesn't heal i don't know why...
       '''
       prev = player['lastRegen']
       now = datetime.datetime.now().replace(microsecond=0)
@@ -197,8 +205,8 @@ class levelsys(commands.Cog):
           current_hp = player['HPmax']
         else:
           current_hp = player['HP'] + heal
-          playerDB.update_one({'id':player['id']}, {'$set':{'HP':current_hp},})
-          playerDB.update_one({'id':player['id']}, {'$set':{'lastRegen': datetime.datetime.now().replace(microsecond=0)}})
+        playerDB.update_one({'id':player['id']}, {'$set':{'HP':current_hp}})
+        playerDB.update_one({'id':player['id']}, {'$set':{'lastRegen': datetime.datetime.now().replace(microsecond=0)}})
         
 
     @commands.command(aliases=["สั่งฆ่า"])
@@ -210,13 +218,9 @@ class levelsys(commands.Cog):
       if ctx.author.id == 313326050090156032:
           await ctx.channel.send("{} สั่งฆ่า {} ด้วยความแรง 999999999 damge".format(attacker, attacked))
           await ctx.channel.send("{}'s dead. RIP กากเกิ๊นนน".format(attacked))
-          playerDB.update_one({"id":punched['id']}, {"$set":{"HP":0}})
-          playerDB.update_one({"id":punched['id']}, {"$set":{"Alive":False}})
-          playerDB.update_one({"id":puncher['id']}, {"$set":{"CD":True}})
-          await asyncio.sleep(300)
-          playerDB.update_one({"id":punched['id']}, {"$set":{"Alive":True}})
-          await asyncio.sleep(300)
-          playerDB.update_one({"id":puncher['id']}, {"$set":{"CD":False}})
+          playerDB.update_one({'id':punched['id']}, {'$set':{'HP':0}})
+          playerDB.update_one({'id':punched['id']}, {'$set':{'alive':False}})
+          playerDB.update_one({'id':punched['id']}, {'$set':{'died':datetime.datetime.now().replace(microsecond=0)}})
       else:
         await ctx.channel.send("ไม่ใช่ GM ใช้ไม่ได้ครับน้อง ๆ")
 
@@ -224,6 +228,7 @@ class levelsys(commands.Cog):
     async def resetHP(self, ctx):
       if ctx.author.id == 313326050090156032:
         playerDB.update_many({}, {"$set": {"HP":200}})
+        playerDB.update_many({}, {"$set": {"alive":True}})
       else:
         await ctx.channel.send("คำสั่งสำหรับ GM ไว้รีเซตเลือดเฉยๆครับ")
     
