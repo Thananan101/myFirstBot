@@ -152,7 +152,7 @@ class levelsys(commands.Cog):
           await ctx.channel.send("{} ต่อยเข้าไปที่หน้าของ {} ด้วยความแรง {} damge".format(attacker, attacked, dmg))
           await ctx.channel.send("{}'s dead. RIP กากเกิ๊นนน".format(attacked))        
 
-        playerDB.update_one({'id':puncher['id']}, {'$set':{'CD':20}})
+        playerDB.update_one({'id':puncher['id']}, {'$set':{'CD':30}})
         playerDB.update_one({'id':puncher['id']}, {'$set':{'prevSkillTime':datetime.datetime.now()}})
       else:
         await ctx.channel.send('ใจเย็นๆนะ ยังต่อยไม่ได้ รู้อยากว้อนแต่กำหมัดไว้ก่อน')
@@ -224,11 +224,30 @@ class levelsys(commands.Cog):
       else:
         await ctx.channel.send("ไม่ใช่ GM ใช้ไม่ได้ครับน้อง ๆ")
 
+    @commands.command(aliases=['ฮีล'])
+    async def heal(self, ctx, who: discord.Member):
+      if who is None:
+        who = ctx.author
+      player = playerDB.find_one({'id':who.id})
+      heal = randrange(50)
+      self.hpRegen(player)
+      self.reviveDeeMai(player)
+      if player['HP'] + heal > player['HPmax']:
+          current_hp = player['HPmax']
+      else:
+          current_hp = player['HP'] + heal
+      await ctx.channel.send('{} heals {} for {} HP'.format(ctx.author.name, who.name, heal))
+      playerDB.update_one({'id':player['id']}, {'$set':{'HP':current_hp}})
+      playerDB.update_one({'id':ctx.author.id}, {'$set':{'CD':60}})
+    
+
+
     @commands.command()
     async def resetHP(self, ctx):
       if ctx.author.id == 313326050090156032:
         playerDB.update_many({}, {"$set": {"HP":200}})
         playerDB.update_many({}, {"$set": {"alive":True}})
+        playerDB.update_one({}, {'$set':{'lastRegen':datetime.datetime.now().replace(microsecond=0)}})
       else:
         await ctx.channel.send("คำสั่งสำหรับ GM ไว้รีเซตเลือดเฉยๆครับ")
     
