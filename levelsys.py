@@ -89,8 +89,8 @@ class levelsys(commands.Cog):
     @commands.command(aliases=["profile", "pro", "stat"])
     async def status(self, ctx):
       player = playerDB.find_one({"id": ctx.author.id})
-      self.hpRegen(player)
-      self.reviveDeeMai(player)
+      await self.hpRegen(player)
+      await self.reviveDeeMai(player)
       player = playerDB.find_one({"id": ctx.author.id})
       if player is None:
         embed = discord.Embed(description="You haven't sent any messages, no rank for you!!")
@@ -124,10 +124,10 @@ class levelsys(commands.Cog):
       if punched is None:
           self.newplayer(punch)
           punched = playerDB.find_one({"id": punch.id})
-      self.hpRegen(puncher)
-      self.hpRegen(punched)
-      self.reviveDeeMai(punched)
-      self.reviveDeeMai(puncher)
+      await self.hpRegen(puncher)
+      await self.hpRegen(punched)
+      await self.reviveDeeMai(punched)
+      await self.reviveDeeMai(puncher)
       puncher = playerDB.find_one({"id": ctx.author.id})
       punched = playerDB.find_one({"id": punch.id})
 
@@ -136,10 +136,14 @@ class levelsys(commands.Cog):
         return
       if not self.isAlive(punched):
         await ctx.channel.send("คุณ {} เขาตายอยู่นะครับ รบกวนอย่าซ้ำศพนะครับเพื่อสังคมที่ดี ^^".format(attacked))
-        return 
+        return
       if self.isCD(puncher['prevSkillTime'], puncher['CD']):
-        print(f'{attacker} ต่อย {attacked}')
-        dmg = randrange(100)
+        print(f'{attacker} ต่อย {attacked} {punch.id}')
+        crit = randrange(100) < 10 #boolean 10% critical rate
+        dmg = randrange(120)
+        if crit:
+          dmg = dmg*1.5
+          await ctx.channel.send("ต่อยแบบติดคริติค่อน!!")
         if punched['HP'] > dmg:
           hp = punched['HP'] - dmg
           playerDB.update_one({'id':punched['id']}, {'$set':{'HP':hp}})
@@ -150,7 +154,7 @@ class levelsys(commands.Cog):
           playerDB.update_one({'id':punched['id']}, {'$set':{'alive':False}})
           playerDB.update_one({'id':punched['id']}, {'$set':{'died':datetime.datetime.now().replace(microsecond=0)}})
           await ctx.channel.send("{} ต่อยเข้าไปที่หน้าของ {} ด้วยความแรง {} damge".format(attacker, attacked, dmg))
-          await ctx.channel.send("{}'s dead. RIP กากเกิ๊นนน".format(attacked))        
+          await ctx.channel.send("{}'s dea``d. RIP กากเกิ๊นนน".format(attacked))        
 
         playerDB.update_one({'id':puncher['id']}, {'$set':{'CD':30}})
         playerDB.update_one({'id':puncher['id']}, {'$set':{'prevSkillTime':datetime.datetime.now()}})
@@ -168,7 +172,7 @@ class levelsys(commands.Cog):
       else:
         return True
 
-    def reviveDeeMai(self, player):
+    async def reviveDeeMai(self, player):
       if not player['alive']:
         #if player is dead
         print(player['alive'])
@@ -188,7 +192,7 @@ class levelsys(commands.Cog):
       "died":0}
       playerDB.insert_one(newuser)
 
-    def hpRegen(self, player):
+    async def hpRegen(self, player):
       '''
       For the time being, I'm using hpregen = 10/minutes, which means that if the difference is greater than 1 minute, we heal the player.
 
@@ -200,7 +204,7 @@ class levelsys(commands.Cog):
       if int(diff.seconds/60) < 1:
         return
       else:
-        heal = int(diff.seconds/60) * 10
+        heal = int(diff.seconds/60) * 2
         if player['HP'] + heal > player['HPmax']:
           current_hp = player['HPmax']
         else:
@@ -229,16 +233,21 @@ class levelsys(commands.Cog):
       if who is None:
         who = ctx.author
       player = playerDB.find_one({'id':who.id})
-      heal = randrange(50)
-      self.hpRegen(player)
-      self.reviveDeeMai(player)
-      if player['HP'] + heal > player['HPmax']:
-          current_hp = player['HPmax']
+      healer = playerDB.find_one({'id':ctx.author.id})
+      heal = randrange(40, 70)
+      await self.hpRegen(player)
+      await self.reviveDeeMai(player)
+      if self.isCD(healer['prevSkillTime'], healer['CD']):
+        if player['HP'] + heal > player['HPmax']:
+            current_hp = player['HPmax']
+        else:
+            current_hp = player['HP'] + heal
+        await ctx.channel.send('{} heals {} for {} HP'.format(ctx.author.name, who.name, heal))
+        playerDB.update_one({'id':player['id']}, {'$set':{'HP':current_hp}})
+        playerDB.update_one({'id':healer['id']}, {'$set':{'CD':60}})
+        playerDB.update_one({'id':healer['id']}, {'$set':{'prevSkillTime':datetime.datetime.now()}})
       else:
-          current_hp = player['HP'] + heal
-      await ctx.channel.send('{} heals {} for {} HP'.format(ctx.author.name, who.name, heal))
-      playerDB.update_one({'id':player['id']}, {'$set':{'HP':current_hp}})
-      playerDB.update_one({'id':ctx.author.id}, {'$set':{'CD':60}})
+        await ctx.channel.send("ติด CD ครับ")
     
 
 
