@@ -68,8 +68,8 @@ class levelsys(commands.Cog):
         embed.set_thumbnail(url=ctx.author.avatar_url)
         await ctx.channel.send(embed=embed)
 
-    @commands.command()
-    async def leaderboard(self, ctx):
+    @commands.command(aliases=['rank', 'Rank', 'ranking'])
+    async def rankings(self, ctx):
       rankings = playerDB.find().sort("xp", -1)
       i = 1
       embed = discord.Embed(title="Rankings:")
@@ -79,6 +79,25 @@ class levelsys(commands.Cog):
           temp = await ctx.guild.fetch_member(x["id"])
           tempxp = x["xp"]
           embed.add_field(name=f"{i}: {temp.name}",value=f"Total XP: {tempxp}", inline=False)
+          i += 1
+        except:
+          pass
+        if i == 11:
+          break
+      await ctx.channel.send(embed=embed)
+
+    @commands.command()
+    async def leaderboard(self, ctx):
+      rankings = playerDB.find().sort('Kill', -1)
+      i = 1
+      embed = discord.Embed(title='Rankings:')
+      for x in rankings:
+        print(x)
+        try:
+          temp = await ctx.guild.fetch_member(x['id'])
+          tempKill = x['Kill']
+          tempDeath = x['death']
+          embed.add_field(name=f"{i}: {temp.name}",value=f"K/D: {tempKill}/{tempDeath}", inline=False)
           i += 1
         except:
           pass
@@ -154,7 +173,13 @@ class levelsys(commands.Cog):
           playerDB.update_one({'id':punched['id']}, {'$set':{'alive':False}})
           playerDB.update_one({'id':punched['id']}, {'$set':{'died':datetime.datetime.now().replace(microsecond=0)}})
           await ctx.channel.send("{} ต่อยเข้าไปที่หน้าของ {} ด้วยความแรง {} damge".format(attacker, attacked, dmg))
-          await ctx.channel.send("{}'s dea``d. RIP กากเกิ๊นนน".format(attacked))        
+          await ctx.channel.send("{}'s dea``d. RIP กากเกิ๊นนน".format(attacked)) 
+          xp = puncher['xp'] + 50
+          kills = puncher['kill'] + 1
+          dead = punched['death'] + 1
+          playerDB.update_one({'id':puncher['id']}, {'$set':{'xp':xp}})    
+          playerDB.update_one({'id':puncher['id']}, {'$set':{'kill': kills}})
+          playerDB.update_one({'id':punched['id']}, {'$set':{'death':dead}})   
 
         playerDB.update_one({'id':puncher['id']}, {'$set':{'CD':30}})
         playerDB.update_one({'id':puncher['id']}, {'$set':{'prevSkillTime':datetime.datetime.now()}})
@@ -256,7 +281,7 @@ class levelsys(commands.Cog):
       if ctx.author.id == 313326050090156032:
         playerDB.update_many({}, {"$set": {"HP":200}})
         playerDB.update_many({}, {"$set": {"alive":True}})
-        playerDB.update_one({}, {'$set':{'lastRegen':datetime.datetime.now().replace(microsecond=0)}})
+        playerDB.update_many({}, {'$set':{'lastRegen':datetime.datetime.now().replace(microsecond=0)}})
       else:
         await ctx.channel.send("คำสั่งสำหรับ GM ไว้รีเซตเลือดเฉยๆครับ")
     
@@ -271,7 +296,17 @@ class levelsys(commands.Cog):
       print(b)
       timediff = b-a
       print(timediff.seconds)
-      
+    
+    @commands.command()
+    async def updateDB(self, ctx):
+      """
+      this is use to update anything (new i guess) to MongoDB 
+      just because i tried console and it doesn't work so i build this 
+      function for me.
+      """
+      if ctx.author.id == 313326050090156032:
+        playerDB.update_many({}, {'$set': {'Kill':0}})
+        playerDB.update_many({}, {'$set': {'death':0}})
 
 def setup(client):
   client.add_cog(levelsys(client))
