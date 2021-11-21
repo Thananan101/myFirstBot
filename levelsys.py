@@ -68,23 +68,7 @@ class levelsys(commands.Cog):
         embed.set_thumbnail(url=ctx.author.avatar_url)
         await ctx.channel.send(embed=embed)
 
-    @commands.command(aliases=['rank', 'Rank', 'ranking'])
-    async def rankings(self, ctx):
-      rankings = playerDB.find().sort("xp", -1)
-      i = 1
-      embed = discord.Embed(title="Rankings:")
-      for x in rankings:
-        print(x)
-        try:
-          temp = await ctx.guild.fetch_member(x["id"])
-          tempxp = x["xp"]
-          embed.add_field(name=f"{i}: {temp.name}",value=f"Total XP: {tempxp}", inline=False)
-          i += 1
-        except:
-          pass
-        if i == 11:
-          break
-      await ctx.channel.send(embed=embed)
+
 
     @commands.command()
     async def leaderboard(self, ctx):
@@ -307,6 +291,25 @@ class levelsys(commands.Cog):
       if ctx.author.id == 313326050090156032:
         playerDB.update_many({}, {'$set': {'Kill':0}})
         playerDB.update_many({}, {'$set': {'death':0}})
+
+    @commands.command(aliases=["ranking", "Ranking"])
+    async def rankings(self, ctx):
+      rankings = playerDB.find().sort("xp", -1)
+      i = 1
+      embed = discord.Embed(title="Rankings:")
+      for x in rankings:
+        print(x)
+        try:
+          temp = await ctx.guild.fetch_member(x["id"])
+          tempxp = x["xp"]
+          embed.add_field(name=f"{i}: {temp.name}",value=f"Total XP: {tempxp}", inline=False)
+          i += 1
+        except:
+          pass
+        if i == 11:
+          break
+      await ctx.channel.send(embed=embed)
+
 
 def setup(client):
   client.add_cog(levelsys(client))
