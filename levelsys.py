@@ -29,13 +29,10 @@ class levelsys(commands.Cog):
         else:
           xp = stats["xp"] + 5
           playerDB.update_one({"id":message.author.id}, {"$set":{"xp":xp}})
-          lvl = 0
-          while True:
-            if xp < ((50*(lvl**2)) + (50*lvl)):
-              break
-            lvl += 1
-          xp -= ((50*((lvl-1)**2)) + (50*(lvl-1)))
-          if xp == 0:
+          lvl = stats['level']
+          xp -= ((50*((lvl)**2)) + (50*(lvl)))
+          if xp >= 0:
+            lvl+=1
             await message.channel.send(f"well done {message.author.mention}! You leveled up to **level: {lvl}**")
             HPmax = stats["HPmax"]+20
             playerDB.update_one({"id":message.author.id}, {"$set":{"level":lvl}})
@@ -159,10 +156,10 @@ class levelsys(commands.Cog):
           await ctx.channel.send("{} ต่อยเข้าไปที่หน้าของ {} ด้วยความแรง {} damge".format(attacker, attacked, dmg))
           await ctx.channel.send("{}'s dea``d. RIP กากเกิ๊นนน".format(attacked)) 
           xp = puncher['xp'] + 50
-          kills = puncher['kill'] + 1
+          kills = puncher['Kill'] + 1
           dead = punched['death'] + 1
           playerDB.update_one({'id':puncher['id']}, {'$set':{'xp':xp}})    
-          playerDB.update_one({'id':puncher['id']}, {'$set':{'kill': kills}})
+          playerDB.update_one({'id':puncher['id']}, {'$set':{'Kill': kills}})
           playerDB.update_one({'id':punched['id']}, {'$set':{'death':dead}})   
 
         playerDB.update_one({'id':puncher['id']}, {'$set':{'CD':30}})
@@ -234,6 +231,12 @@ class levelsys(commands.Cog):
           playerDB.update_one({'id':punched['id']}, {'$set':{'HP':0}})
           playerDB.update_one({'id':punched['id']}, {'$set':{'alive':False}})
           playerDB.update_one({'id':punched['id']}, {'$set':{'died':datetime.datetime.now().replace(microsecond=0)}})
+          xp = puncher['xp'] + 50
+          kills = puncher['Kill'] + 1
+          dead = punched['death'] + 1
+          playerDB.update_one({'id':puncher['id']}, {'$set':{'xp':xp}})    
+          playerDB.update_one({'id':puncher['id']}, {'$set':{'Kill': kills}})
+          playerDB.update_one({'id':punched['id']}, {'$set':{'death':dead}})         
       else:
         await ctx.channel.send("ไม่ใช่ GM ใช้ไม่ได้ครับน้อง ๆ")
 
