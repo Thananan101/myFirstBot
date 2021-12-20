@@ -489,10 +489,18 @@ category = "main"
 optional = false
 python-versions = "*"
 
+[[package]]
+name = "youtube-dl2"
+version = "2.0"
+description = "YouTube video downloader"
+category = "main"
+optional = false
+python-versions = "*"
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "f6f4ac445a076cb24175f2696a60bb4714af1aa22eeefe53d05231dd1373f868"
+content-hash = "d026a86e10c7e1ffc23847968cef89435bb640d0cd46ff49ce0c7d7fb05aab3c"
 
 [metadata.files]
 aiohttp = [
@@ -1080,4 +1088,7 @@ yarl = [
 youtube-dl = [
     {file = "youtube_dl-2021.6.6-py2.py3-none-any.whl", hash = "sha256:263e04d53fb8ba3dfbd246ad09b7d388e896c132a20cc770c26ee7684de050ac"},
     {file = "youtube_dl-2021.6.6.tar.gz", hash = "sha256:cb2d3ee002158ede783e97a82c95f3817594df54367ea6a77ce5ceea4772f0ab"},
+]
+youtube-dl2 = [
+    {file = "youtube_dl2-2.0.tar.gz", hash = "sha256:55b896026aba3bbfc121f49161d2b98116c0177068a9f21bd6e0c3d14713017e"},
 ]

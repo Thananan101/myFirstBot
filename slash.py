@@ -11,7 +11,7 @@ class slash(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @slash.slash(description ='just testing')
+    @slash.slash(name = 'Ping', description ='just testing')
     async def ping(self, ctx: SlashContext):
         embed = discord.Embed(title="embed test")
         await ctx.send(content="test", embeds=[embed])

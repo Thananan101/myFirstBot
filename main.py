@@ -19,7 +19,7 @@ from os import system
 import imaplib
 import email
 
-from readEmail import getDBZoomLink
+from readEmail import getTcomZoomLink
 import levelsys
 import music
 import slash
@@ -28,6 +28,7 @@ import asyncio
 
 import googletrans  
 from googletrans import Translator
+
 
 my_secret = os.environ['TOKEN']
 TOKEN = (my_secret)
@@ -44,7 +45,7 @@ bGun = ["ซักหมัดปะมึงอะ ไอ่บูม <:BGummud
 @client.event
 async def on_ready():
   print('we have logged in as {0.user}'.format(client))
-  await client.change_presence(activity=discord.Streaming(name="ตอนไหนจะเริ่มวะ", url='https://www.twitch.tv/tenenx'))
+  await client.change_presence(activity=discord.Streaming(name="กด Follow hawonx ด้วยนะครับ ^^", url='https://www.twitch.tv/hawonx'))
   levelsys.setup(client)
   music.setup(client)
   slash.setup(client)
@@ -120,29 +121,19 @@ async def bg(ctx):
   await ctx.message.channel.send(bGun[randrange(len(bGun))])
 
 
-@client.command(pass_context = True)
-async def sto(ctx):
+@client.command(pass_context = True, aliases=['PRINCIPLES OF DIGITAL COMMUNICATION AND MODELING', 'digit', 'principle', 'principles', 'comm'])
+async def digital(ctx):
   await ctx.message.channel.send("https://us02web.zoom.us/j/84507102474?fbclid=IwAR31Fcy6_iEj9I2Ol6EsTowxlYs1lLjN1PW9di_Vy4_a0b5HKXFn2uruZBU#success รหัส 804401")
 
-@client.command(pass_context = True, aliases=["com-net"])
-async def comnet(ctx, QA = "none"):
-  Q_A = ["-a", "a", "QA", "Q&A"]
-  if QA in Q_A :
-    await ctx.message.channel.send("https://answerkku.hadwan.com/index?fbclid=IwAR17mQWmIo62KeO9-W_NNhSv3ijguCs2Q8IHQkwLYNgScIyFhs4cGzUHP2w")
-  else:
-    await ctx.message.channel.send("https://kku-th.zoom.us/j/9385720886?pwd=b1hRcDR2QUxUM2w1emhNZkZLWUtEZz09")
+@client.command(pass_context = True, aliases=["softN", 'software', 'software engineer', 'swe'])
+async def SWE(ctx):
+  await ctx.message.channel.send("https://meet.google.com/ioj-xbge-ifb")
 
-@client.command(pass_context = True, aliases=["comarc", "comarch"])
-async def comarchitecture(ctx):
-  await ctx.message.channel.send(" https://meet.google.com/mex-wnuw-nfr")
 
-@client.command(pass_context = True, aliases=["micro"])
-async def microprocessors(ctx):
-  await ctx.message.channel.send("https://meet.google.com/jca-wghe-ygf")
+@client.command(pass_context = True, aliases=["mobile app", 'mobileapp'])
+async def mobile(ctx):
+  await ctx.message.channel.send("https://meet.google.com/yns-kzsg-yem?authuser=1")
 
-@client.command(pass_context = True, aliases=["AI", "ann"])
-async def ANN(ctx):
-  await ctx.message.channel.send("https://kku-th.zoom.us/j/91250200893?pwd=NnNDUzNkYmpDZTNEbFJESzBFREplZz09")
 
 
 #บอทเข้าห้องไม่ได้ติด channel.connect()
@@ -235,13 +226,14 @@ def is_connected(ctx):
     voice_client = get(client.voice_clients, guild=ctx.guild)
     return 
 
-@client.command(pass_context = True, aliases=["database"])
-async def db(ctx):
-  link = getDBZoomLink()
-  await ctx.message.channel.send(link)
-
-
-
+@client.command(pass_context = True, aliases=["Tcom", "Theory"])
+async def theory(ctx):
+  links = getTcomZoomLink()
+  for i, link in enumerate(links):
+    if i == 0:
+      await ctx.channel.send('here is the 1st link: {}'.format(link))
+    elif i == 1:
+      await ctx.channel.send('here is the 2nd link: {}'.format(link))
 
 
 keep_alive()

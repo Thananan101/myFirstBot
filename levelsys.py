@@ -31,10 +31,12 @@ class levelsys(commands.Cog):
           playerDB.update_one({"id":message.author.id}, {"$set":{"xp":xp}})
           lvl = stats['level']
           xp -= ((50*((lvl)**2)) + (50*(lvl)))
+          HPmax = (lvl-1)*10 + 200
+          playerDB.update_one({"id":message.author.id}, {"$set":{"HPmax":HPmax}})      
           if xp >= 0:
             lvl+=1
             await message.channel.send(f"well done {message.author.mention}! You leveled up to **level: {lvl}**")
-            HPmax = stats["HPmax"]+20
+            HPmax = stats["HPmax"]+10
             playerDB.update_one({"id":message.author.id}, {"$set":{"level":lvl}})
             playerDB.update_one({"id":message.author.id}, {"$set":{"HP":HPmax}})
             playerDB.update_one({"id":message.author.id}, {"$set":{"HPmax":HPmax}})
@@ -150,17 +152,23 @@ class levelsys(commands.Cog):
           await ctx.channel.send("{} ต่อย {} ด้วยความแรง {} damge".format(attacker, attacked, dmg))
           await ctx.channel.send("{}'s HP: {}".format(attacked, hp)) 
         else:
-          playerDB.update_one({'id':punched['id']}, {'$set':{'HP':0}})
-          playerDB.update_one({'id':punched['id']}, {'$set':{'alive':False}})
-          playerDB.update_one({'id':punched['id']}, {'$set':{'died':datetime.datetime.now().replace(microsecond=0)}})
-          await ctx.channel.send("{} ต่อยเข้าไปที่หน้าของ {} ด้วยความแรง {} damge".format(attacker, attacked, dmg))
-          await ctx.channel.send("{}'s dea``d. RIP กากเกิ๊นนน".format(attacked)) 
-          xp = puncher['xp'] + 50
-          kills = puncher['Kill'] + 1
-          dead = punched['death'] + 1
-          playerDB.update_one({'id':puncher['id']}, {'$set':{'xp':xp}})    
-          playerDB.update_one({'id':puncher['id']}, {'$set':{'Kill': kills}})
-          playerDB.update_one({'id':punched['id']}, {'$set':{'death':dead}})   
+          if puncher == punched:
+            playerDB.update_one({'id':punched['id']}, {'$set':{'HP':0.1}})
+            await ctx.channel.send('{} ต่อยไปที่หน้าตัวเองแบบงงๆ จนจะตาย ด้วยความแรง {} damage'.format(attacker, dmg))
+            await ctx.channel.send("แต่เนื่องจากผมไม่สนับสนุนให้มีการฆ่าตัวตายดังนั้นไม่ตายครับ เชิญซ้ำได้เลย")
+            await ctx.channel.send("อ้อเกือบลืมบอกไป {}'s HP: 0.1".format(attacked))
+          else:
+            playerDB.update_one({'id':punched['id']}, {'$set':{'HP':0}})
+            playerDB.update_one({'id':punched['id']}, {'$set':{'alive':False}})
+            playerDB.update_one({'id':punched['id']}, {'$set':{'died':datetime.datetime.now().replace(microsecond=0)}})
+            await ctx.channel.send("{} ต่อยเข้าไปที่หน้าของ {} ด้วยความแรง {} damge".format(attacker, attacked, dmg))
+            await ctx.channel.send("{}'s dead. RIP กากเกิ๊นนน".format(attacked)) 
+            xp = puncher['xp'] + 50
+            kills = puncher['Kill'] + 1
+            dead = punched['death'] + 1
+            playerDB.update_one({'id':puncher['id']}, {'$set':{'xp':xp}})    
+            playerDB.update_one({'id':puncher['id']}, {'$set':{'Kill': kills}})
+            playerDB.update_one({'id':punched['id']}, {'$set':{'death':dead}})   
 
         playerDB.update_one({'id':puncher['id']}, {'$set':{'CD':30}})
         playerDB.update_one({'id':puncher['id']}, {'$set':{'prevSkillTime':datetime.datetime.now()}})
@@ -246,9 +254,12 @@ class levelsys(commands.Cog):
         who = ctx.author
       player = playerDB.find_one({'id':who.id})
       healer = playerDB.find_one({'id':ctx.author.id})
-      heal = randrange(40, 70)
+      heal = randrange(50, 90)
       await self.hpRegen(player)
       await self.reviveDeeMai(player)
+      if not self.isAlive(player):
+        await ctx.channel.send("คุณมึงตายอยู่ครับ คนตายก็อยู่นิ่งๆดิ๊")
+        return
       if self.isCD(healer['prevSkillTime'], healer['CD']):
         if player['HP'] + heal > player['HPmax']:
             current_hp = player['HPmax']
@@ -256,7 +267,7 @@ class levelsys(commands.Cog):
             current_hp = player['HP'] + heal
         await ctx.channel.send('{} heals {} for {} HP'.format(ctx.author.name, who.name, heal))
         playerDB.update_one({'id':player['id']}, {'$set':{'HP':current_hp}})
-        playerDB.update_one({'id':healer['id']}, {'$set':{'CD':60}})
+        playerDB.update_one({'id':healer['id']}, {'$set':{'CD':50}})
         playerDB.update_one({'id':healer['id']}, {'$set':{'prevSkillTime':datetime.datetime.now()}})
       else:
         await ctx.channel.send("ติด CD ครับ")
@@ -293,7 +304,6 @@ class levelsys(commands.Cog):
       """
       if ctx.author.id == 313326050090156032:
         playerDB.update_many({}, {'$set': {'Kill':0}})
-        playerDB.update_many({}, {'$set': {'death':0}})
 
     @commands.command(aliases=["ranking", "Ranking"])
     async def rankings(self, ctx):

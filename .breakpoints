@@ -1,17 +1,25 @@
 {
   "files": {
+    "main.py": [
+      {
+        "id": "d14d129c-a0c6-499b-8e12-23d7632901b9",
+        "line": 10,
+        "version": 11198,
+        "index": 210
+      }
+    ],
     "slash.py": [
       {
         "id": "30464bd1-5149-4a20-ba06-7cb9a669b30f",
         "line": 24,
-        "version": 359,
-        "index": 889
+        "version": 379,
+        "index": 904
       },
       {
         "id": "ec0325db-781f-43e4-a915-8b017dafb288",
         "line": 24,
-        "version": 359,
-        "index": 699
+        "version": 379,
+        "index": 714
       }
     ]
   }

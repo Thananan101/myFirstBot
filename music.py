@@ -10,6 +10,9 @@ import youtube_dl
 from async_timeout import timeout
 from discord.ext import commands
 
+
+#https://gist.github.com/vbe0201/ade9b80f2d3b64643d854938d40a0a2d
+
 # Silence useless bug reports messages
 youtube_dl.utils.bug_reports_message = lambda: ''
 
@@ -323,7 +326,7 @@ class Music(commands.Cog):
           await ctx.voice_client.disconnect()
           await ctx.send("ไปละ บัยยย")
         else:
-          await ctx.send("ไม่ กูไม่ออก ออกแล้วจะเอาอะไรแดก")
+          await ctx.send("ออกจากไหนก่อนน ออกจากดิสเลยปะ")
           try:
             await ctx.voice_client.disconnect()
           except:

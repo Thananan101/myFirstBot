@@ -12,7 +12,7 @@ app_password= os.environ['PASSWORD']
 # https://www.systoolsgroup.com/imap/
 gmail_host= 'imap.gmail.com'
 
-def getDBZoomLink():
+def getTcomZoomLink():
   
     #set connection
     mail = imaplib.IMAP4_SSL(gmail_host)
@@ -21,7 +21,7 @@ def getDBZoomLink():
     mail.select("INBOX")
 
     #Search for keyword
-    _, selected_mails = mail.search(None, '(SUBJECT "Database Systems class")')
+    _, selected_mails = mail.search(None, '(SUBJECT "Theory of Computation")')
 
     for num in selected_mails[0].split():
 
@@ -34,7 +34,7 @@ def getDBZoomLink():
 
     #access data
     i = False
-    link = ''
+    link = []
     for part in email_message.walk():
         if part.get_content_type()=="text/plain" or part.get_content_type()     =="text/html":
           message = part.get_payload(decode=True)
@@ -43,7 +43,7 @@ def getDBZoomLink():
               if i:
                 print("here is the link:", line)
                 i = False
-                link = line
+                link.append(line)
               if line == "Join Zoom Meeting":
                 i = True
 
