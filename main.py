@@ -42,6 +42,8 @@ bLung = ["ไอ้สัสลุง หัดใช้สมองบ้าง
 bTee = ["ไม่มีคอนโดมาเอากับพี่ <:Tee_smile:850487711420645386>", "ผมไม่ใช่ทีธรรมดา ผมอะทีรัก <:Tee_smile:850487711420645386>"]
 bGun = ["ซักหมัดปะมึงอะ ไอ่บูม <:BGummud:841699099249344542>", "มาเดี๋ยวซับน้ำตาให้ แต่ซับด้วยหมัดกูเนี่ยแหละ <:BGummud:841699099249344542>", " อะไรล่ะน้องเอ้ว <:BGummud:841699099249344542>"]
 
+
+
 @client.event
 async def on_ready():
   print('we have logged in as {0.user}'.format(client))
@@ -128,12 +130,15 @@ async def digital(ctx):
 @client.command(pass_context = True, aliases=["softN", 'software', 'software engineer', 'swe'])
 async def SWE(ctx):
   await ctx.message.channel.send("https://meet.google.com/ioj-xbge-ifb")
-
+	
 
 @client.command(pass_context = True, aliases=["mobile app", 'mobileapp'])
 async def mobile(ctx):
   await ctx.message.channel.send("https://meet.google.com/yns-kzsg-yem?authuser=1")
 
+@client.command(pass_context = True, aliases=["ML","ml"])
+async def machine(ctx):
+  await ctx.message.channel.send("https://meet.google.com/kfe-zbjn-ufa")
 
 
 #บอทเข้าห้องไม่ได้ติด channel.connect()
