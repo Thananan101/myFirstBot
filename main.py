@@ -30,8 +30,8 @@ import googletrans
 from googletrans import Translator
 
 
-my_secret = os.environ['TOKEN']
-TOKEN = (my_secret)
+TOKEN = os.environ['TOKEN']
+
 
 
 client = commands.Bot(command_prefix = '$', Intents=discord.Intents.all())
@@ -132,7 +132,7 @@ async def SWE(ctx):
   await ctx.message.channel.send("https://meet.google.com/ioj-xbge-ifb")
 	
 
-@client.command(pass_context = True, aliases=["mobile app", 'mobileapp'])
+@client.command(pass_context = True, aliases=["mobile app", 'mobileapp', 'mob-app'])
 async def mobile(ctx):
   await ctx.message.channel.send("https://meet.google.com/yns-kzsg-yem?authuser=1")
 
