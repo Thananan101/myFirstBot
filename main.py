@@ -32,8 +32,6 @@ from googletrans import Translator
 
 TOKEN = os.environ['TOKEN']
 
-
-
 client = commands.Bot(command_prefix = '$', Intents=discord.Intents.all())
 
 
@@ -41,6 +39,7 @@ bPuen = ["ไอ่ปืนมันไก่กรู๊กกก", "น้อ
 bLung = ["ไอ้สัสลุง หัดใช้สมองบ้างนะไอ้เหี้ยย", "7 ปีละนะไอ้สัส เมื่อไหร่จะย้ายออกจากข้างบ้านกุซักที"]
 bTee = ["ไม่มีคอนโดมาเอากับพี่ <:Tee_smile:850487711420645386>", "ผมไม่ใช่ทีธรรมดา ผมอะทีรัก <:Tee_smile:850487711420645386>"]
 bGun = ["ซักหมัดปะมึงอะ ไอ่บูม <:BGummud:841699099249344542>", "มาเดี๋ยวซับน้ำตาให้ แต่ซับด้วยหมัดกูเนี่ยแหละ <:BGummud:841699099249344542>", " อะไรล่ะน้องเอ้ว <:BGummud:841699099249344542>"]
+bTen = ["เหล่ท่อ", "ช่วงโควิดต้องใส่แมส ส่วนเตาแก๊สมีไว้จุดไฟ"]
 
 
 
@@ -52,6 +51,16 @@ async def on_ready():
   music.setup(client)
   slash.setup(client)
 
+@client.event
+async def on_message(message):
+    # do some extra stuff here
+    if message.content == "งอง" or message.content == "ngong":
+      await message.channel.send("งอง เชี่ยไรไอ้สัส เดี๋ยวโดนเอิร์ทตบให้ซักป๊าบ")
+  
+    if message.content.startswith("หยิ่ง"):
+      await message.channel.send("จริง ในดิสมีแต่คนหยิ่ง หยิ่งเกิ๊นนนน")
+
+    await client.process_commands(message)
 
 @client.command(pass_context = True)
 async def joina(ctx):
@@ -93,6 +102,10 @@ async def arrogant(ctx):
 async def elf(ctx):
   await ctx.message.channel.send("Jett korean อะ seoldam แต่น้องเอ้วอะ so hot   <:sohuttt:850139344836886568>")
 
+@client.command(pass_context = True, aliases=['งอง'])
+async def ngong(ctx):
+  await ctx.channel.send("งอง เชี่ยไรไอ้สัส เดี๋ยวโดนเอิร์ทตบให้ซักป๊าบ")
+
 # how to use custom emoji: <:emojiName:emojiID> you can get the id from sticker URL
 @client.command(pass_context = True, aliases=["ปืน"])
 async def puen(ctx):
@@ -104,7 +117,7 @@ async def lung(ctx):
 
 @client.command(pass_context = True, aliases=["เท็น"])
 async def ten(ctx):
-  await ctx.message.channel.send("เหล่ท่อ <:tenenz:841397333136244756>")
+  await ctx.message.channel.send(bTen[randrange(len(bTen))] +" <:tenenz:841397333136244756>")
 
 @client.command(pass_context = True, aliases=["ชานม", "หนม", "น้ำหวาน", "ขนมนมเนยนุ๊บนิ๊บ"])
 async def chanom(ctx):
