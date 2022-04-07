@@ -4,16 +4,17 @@ import email
 import os
 
 #credentials
-username ="thananan_pi@kkumail.com"
+username = "thananan_pi@kkumail.com"
 
 #generated app password
-app_password= os.environ['PASSWORD']
+app_password = os.environ['PASSWORD']
 
 # https://www.systoolsgroup.com/imap/
-gmail_host= 'imap.gmail.com'
+gmail_host = 'imap.gmail.com'
+
 
 def getTcomZoomLink():
-  
+
     #set connection
     mail = imaplib.IMAP4_SSL(gmail_host)
     mail.login(username, app_password)
@@ -25,8 +26,8 @@ def getTcomZoomLink():
 
     for num in selected_mails[0].split():
 
-      _, data = mail.fetch(num , '(RFC822)')
-      _, bytes_data = data[0]
+        _, data = mail.fetch(num, '(RFC822)')
+        _, bytes_data = data[0]
 
     #convert the byte data to message
     email_message = email.message_from_bytes(bytes_data)
@@ -36,17 +37,18 @@ def getTcomZoomLink():
     i = False
     link = []
     for part in email_message.walk():
-        if part.get_content_type()=="text/plain" or part.get_content_type()     =="text/html":
-          message = part.get_payload(decode=True)
-          print("Message: \n", message.decode())
-          for line in message.decode().splitlines():
-              if i:
-                print("here is the link:", line)
-                i = False
-                link.append(line)
-              if line == "Join Zoom Meeting":
-                i = True
+        if part.get_content_type() == "text/plain" or part.get_content_type(
+        ) == "text/html":
+            message = part.get_payload(decode=True)
+            print("Message: \n", message.decode())
+            for line in message.decode().splitlines():
+                if i:
+                    print("here is the link:", line)
+                    i = False
+                    link.append(line)
+                if line == "Join Zoom Meeting":
+                    i = True
 
-          print("==========================================\n")
-          break
+            print("==========================================\n")
+            break
     return link

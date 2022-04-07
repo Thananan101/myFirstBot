@@ -2,16 +2,10 @@
   "files": {
     "main.py": [
       {
-        "id": "d14d129c-a0c6-499b-8e12-23d7632901b9",
-        "line": 10,
-        "version": 11301,
-        "index": 210
-      },
-      {
         "id": "5f3acdf7-4321-4e25-af5f-a55b2bdaef29",
-        "line": 245,
-        "version": 11301,
-        "index": 8377
+        "line": 269,
+        "version": 11841,
+        "index": 10032
       }
     ],
     "poetry.lock": [

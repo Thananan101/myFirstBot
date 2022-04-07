@@ -29,6 +29,7 @@ import asyncio
 import googletrans  
 from googletrans import Translator
 
+import valorant
 
 TOKEN = os.environ['TOKEN']
 
@@ -39,7 +40,7 @@ bPuen = ["ไอ่ปืนมันไก่กรู๊กกก", "น้อ
 bLung = ["ไอ้สัสลุง หัดใช้สมองบ้างนะไอ้เหี้ยย", "7 ปีละนะไอ้สัส เมื่อไหร่จะย้ายออกจากข้างบ้านกุซักที"]
 bTee = ["ไม่มีคอนโดมาเอากับพี่ <:Tee_smile:850487711420645386>", "ผมไม่ใช่ทีธรรมดา ผมอะทีรัก <:Tee_smile:850487711420645386>"]
 bGun = ["ซักหมัดปะมึงอะ ไอ่บูม <:BGummud:841699099249344542>", "มาเดี๋ยวซับน้ำตาให้ แต่ซับด้วยหมัดกูเนี่ยแหละ <:BGummud:841699099249344542>", " อะไรล่ะน้องเอ้ว <:BGummud:841699099249344542>"]
-bTen = ["เหล่ท่อ", "ช่วงโควิดต้องใส่แมส ส่วนเตาแก๊สมีไว้จุดไฟ"]
+bTen = ["เหล่ท่อ", "ช่วงโควิดต้องใส่แมส ส่วนเตาแก๊สมีไว้จุดไฟ", "ช่วงโควิดต้องใส่แมส แต่ถ้าเป็นแจ๊สอะต้อง สปุ๊กนิค ปาปิยองกุ๊กกุ๊ก"]
 
 
 
@@ -119,6 +120,10 @@ async def lung(ctx):
 async def ten(ctx):
   await ctx.message.channel.send(bTen[randrange(len(bTen))] +" <:tenenz:841397333136244756>")
 
+@client.command(pass_context = True, aliases=["มิค", "mickey", "มิก"])
+async def mick(ctx):
+  await ctx.message.channel.send("อยากปากแซ่บแบบพี่ปืนจังเลยค้าบบบ")
+
 @client.command(pass_context = True, aliases=["ชานม", "หนม", "น้ำหวาน", "ขนมนมเนยนุ๊บนิ๊บ"])
 async def chanom(ctx):
   await ctx.message.channel.send("ไอ้นั่นมันชื่อภูมิ ไอ้สัส เรียกให้ถูกดิ๊ <:Chandsome:851074765305020476>")
@@ -153,6 +158,9 @@ async def mobile(ctx):
 async def machine(ctx):
   await ctx.message.channel.send("https://meet.google.com/kfe-zbjn-ufa")
 
+@client.command(pass_context = True, aliases=["work-prep", "wpp", "wp"])
+async def work(ctx):
+  await ctx.message.channel.send("https://kku-th.zoom.us/j/96896227952")
 
 #บอทเข้าห้องไม่ได้ติด channel.connect()
 
@@ -244,14 +252,17 @@ def is_connected(ctx):
     voice_client = get(client.voice_clients, guild=ctx.guild)
     return 
 
-@client.command(pass_context = True, aliases=["Tcom", "Theory"])
+@client.command(pass_context = True, aliases=["Tcom", "Theory", "TOC", "toc"])
 async def theory(ctx):
   links = getTcomZoomLink()
-  for i, link in enumerate(links):
-    if i == 0:
-      await ctx.channel.send('here is the 1st link: {}'.format(link))
-    elif i == 1:
-      await ctx.channel.send('here is the 2nd link: {}'.format(link))
+  if len(links) == 0:
+    await ctx.channel.send("i can't find any zoom link from my stupid brute force technique")
+  else:
+    for i, link in enumerate(links):
+      if i == 0:
+        await ctx.channel.send('here is the 1st link: {}'.format(link))
+      elif i == 1:
+        await ctx.channel.send('here is the 2nd link: {}'.format(link))
 
 
 keep_alive()
