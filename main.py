@@ -1,39 +1,22 @@
 import discord
 import os 
 from random import randrange
-from replit import db
 from keep_awake import keep_alive
 from discord.ext import commands
-
-from discord import FFmpegPCMAudio
 from discord.utils import get
-import youtube_dl
-
 from alarm import *
-from discord_slash import cog_ext, SlashContext, SlashCommand
-          
 from datetime import datetime   
-
-from os import system
-
-import imaplib
-import email
-
 from readEmail import getTcomZoomLink
 import levelsys
-import music
-import slash
-
-import asyncio
-
-import googletrans  
+import insider
+import asyncio 
 from googletrans import Translator
+import youtube_dl
 
-import valorant
 
-TOKEN = os.environ['TOKEN']
+TOKEN = os.getenv('TOKEN')
 
-client = commands.Bot(command_prefix = '$', Intents=discord.Intents.all())
+client = commands.Bot(command_prefix = '$', intents=discord.Intents.all())
 
 
 bPuen = ["ไอ่ปืนมันไก่กรู๊กกก", "น้องเกิ๊นน", "กระจอก", "ขี้เมา", "เด็กเหี้ย"]
@@ -47,10 +30,14 @@ bTen = ["เหล่ท่อ", "ช่วงโควิดต้องใส�
 @client.event
 async def on_ready():
   print('we have logged in as {0.user}'.format(client))
-  await client.change_presence(activity=discord.Streaming(name="กด Follow hawonx ด้วยนะครับ ^^", url='https://www.twitch.tv/hawonx'))
-  levelsys.setup(client)
-  music.setup(client)
-  slash.setup(client)
+  print(discord.__version__)
+  await client.change_presence(activity=discord.Streaming(name="กด Follow Tenenx ด้วยนะครับ ^^", url='https://www.twitch.tv/tenenx'))
+  await levelsys.setup(client)
+  await insider.setup(client)
+  print("Bot is in the following guilds:")
+
+  for guild in client.guilds:
+      print(f"- {guild.name} ({guild.id})")
 
 @client.event
 async def on_message(message):

@@ -7,7 +7,7 @@ import os
 username = "thananan_pi@kkumail.com"
 
 #generated app password
-app_password = os.environ['PASSWORD']
+app_password = os.getenv('PASSWORD')
 
 # https://www.systoolsgroup.com/imap/
 gmail_host = 'imap.gmail.com'
