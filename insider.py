@@ -52,9 +52,21 @@ class Insider(commands.Cog):
                 play_again_button = discord.ui.Button(style=discord.ButtonStyle.primary, label="เล่นอีกครั้ง")
             
                 async def play_again_callback(interaction: discord.Interaction):
-                    await interaction.response.defer()
-                    # Call the play command again
-                    await self.play(interaction.channel, *[player.id for player in self.players.values()])
+                    #ยังไม่เคย test condition นี้เลย mark หัวไว้
+                    if interaction.user.name not in self.players:
+                        await interaction.response.send_message("ผู้ดำเนินเกมกับคนที่ไม่เกี่ยวข้องอย่ายุ่งครับ.", ephemeral=True)
+                    else:
+                        await interaction.response.defer()
+                        # Delete the play_again_button
+                        await interaction.message.delete()
+                        
+                        # Delete the original vote message
+                        await self.vote_message.delete()
+                        
+                        await self.vote_message.channel.send("{} กดปุ่มเพื่อเริ่มเกมใหม่".format(interaction.user.mention))
+        
+                        # Call the play command again
+                        await self.play(interaction.channel, *[player.id for player in self.players.values()])
                     
                 play_again_button.callback = play_again_callback
                 view = discord.ui.View()
@@ -153,7 +165,7 @@ class Insider(commands.Cog):
             description="กดปุ่มโหวตคนที่คุณคิดว่าเป็นจอมบงการ (insider)",
             color=int("1AA7EC", 16)
         )
-        embed.set_thumbnail(url="https://github.com/alenros/insider/blob/MASTER/public/ms-icon-144x144.png?raw=true")
+        embed.set_thumbnail(url="https://github.com/alenros/insider/blob/master/public/favicon-96x96.png?raw=true")
         embed.add_field(name="Voting", value="Please cast your vote by clicking the button below.", inline=False)
 
         for name, button in self.vote_buttons.items():
@@ -209,7 +221,7 @@ class VoteBtn(discord.ui.Button):
         
         # Set the button properties
         self.style = discord.ButtonStyle.primary
-        self.label = f"{self.name} (Clicks: {self.vote_count})"
+        self.label = f"{self.name}"
         self.custom_id = f"vote_{str(self.name)}"
         
     async def callback(self, interaction: discord.Interaction):
@@ -226,11 +238,11 @@ class VoteBtn(discord.ui.Button):
             prev_vote = self.insider_instance.players[user_name].vote
             prev_button = self.insider_instance.vote_buttons[prev_vote]
             prev_button.vote_count -= 1
-            prev_button.label = f"{prev_button.name} (Clicks: {prev_button.vote_count})"
+            prev_button.label = f"{prev_button.name}"
         
         #add score to new vote
         self.vote_count += 1
-        self.label = f"{self.name} (Clicks: {self.vote_count})"
+        self.label = f"{self.name}"
         print(self.vote_count)
         self.insider_instance.players[user_name].vote = self.name
         await interaction.response.defer()
