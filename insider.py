@@ -12,13 +12,14 @@ class Insider(commands.Cog):
         self.players = {}
         self.vote_buttons = {}  # Store the VoteBtn objects here
         self.vote_message = None
+        self.host_disabled = True
     
     async def get_member(self, user_id):
       user = await self.client.fetch_user(user_id)
       return user
   
     async def get_ids(self, user_id):
-        if type(user_id) == list or type(user_id) == tuple:
+        if isinstance(user_id, (list, tuple)):
             user_ids = [int(re.sub('[<>@!]', '', str(uid))) for uid in user_id]
         else:
             user_ids = int(re.sub('[<>@!]', '', str(user_id)))
@@ -30,6 +31,44 @@ class Insider(commands.Cog):
         word = random.choice(content)
         return word
     
+    async def check_vote(self):
+        vote_counts = [button.vote_count for button in self.vote_buttons.values()]
+        max_vote_count = max(vote_counts)
+        
+    
+        if vote_counts.count(max_vote_count) == 1:
+            max_vote_player = next(
+            (player for player, button in self.vote_buttons.items() if button.vote_count == max_vote_count), None
+            )
+            if max_vote_player:
+                await self.vote_message.channel.send("เกมจบลงแล้วครับ!")
+                await self.vote_message.channel.send("ผู้ที่ถูกโหวตมากสุดก็คือ {}".format(max_vote_player))
+                # delete the timer task
+                if self.active_timer is not None:
+                    self.active_timer.cancel()
+                # ask if they want to play again
+                #create a button to ask if they want to play again
+                #if yes, call play again
+                play_again_button = discord.ui.Button(style=discord.ButtonStyle.primary, label="เล่นอีกครั้ง")
+            
+                async def play_again_callback(interaction: discord.Interaction):
+                    await interaction.response.defer()
+                    # Call the play command again
+                    await self.play(interaction.channel, *[player.id for player in self.players.values()])
+                    
+                play_again_button.callback = play_again_callback
+                view = discord.ui.View()
+                view.add_item(play_again_button)
+                await self.vote_message.channel.send("คุณต้องการเล่นอีกครั้งหรือไม่?", view=view)
+                self.vote_message = None
+                self.vote_buttons = {}
+                self.host_disabled = True
+                
+        else:
+            self.host_disabled = False
+            await self.vote_message.channel.send("มีคนโหวตเท่ากัน ไอ่ Master ออกมาใช้สิทธิ์ใช้เสียงได้ละ")
+            
+        
     @commands.Cog.listener()
     async def on_ready(self):
         print('insider is ready!')
@@ -41,7 +80,7 @@ class Insider(commands.Cog):
     @commands.command()
     async def play(self, ctx, *players):
         players = list(players)  # Convert the tuple to a list
-        roles = ['insider', 'host', 'dumb', 'dumb']
+        roles = ['INSIDER', 'MASTER', 'dumb', 'dumb']
         
         
         #check if author tag himself later
@@ -54,6 +93,9 @@ class Insider(commands.Cog):
         elif num_players >= 5:
             num_dumb = num_players - 5
             roles += ['dumb'] * num_dumb
+        elif num_players > 10:
+            await ctx.send('ต้องมีคนเล่นไม่เกิน 10 คนครับ')
+            return
         print(roles)
         word = self.get_word()
         # Shuffle the second_list randomly
@@ -68,26 +110,23 @@ class Insider(commands.Cog):
 
             player = await self.get_member(player_id)
             item_string = 'คำศัพท์ของรอบนี้ก็คือ {}'.format(word)
-            if role == 'host':
-                await player.send('คุณได้เป็น HOST นะครับ ดูแลเกมดีๆด้วยล่ะ')
+            if role == 'MASTER':
+                await player.send('คุณได้เป็น MASTER นะครับ ดูแลเกมดีๆด้วยล่ะ')
                 await player.send(item_string)
-            elif role == 'insider':
-                await player.send('คุณได้เป็น Insider นะครับ ทำตัวเนียนๆด้วยล่ะ')
+            elif role == 'INSIDER':
+                await player.send('คุณได้เป็น INSIDER นะครับ ทำตัวเนียนๆด้วยล่ะ')
                 await player.send(item_string)
             elif role == 'dumb':
                 await player.send('เป็นชาวบ้านโง่ ๆ สู้ ๆ ละกัน')
-            self.players[player.name] = Player(player.name, role)
+            await player.send('-------------------------')
+            self.players[player.name] = Player(player.name, role, player_id)
 
         async def timer_task():
             await ctx.send('เกมเริ่ม พวกคุณมีเวลา 5 นาที เลทสึโก') 
             await ctx.send('เริ่มจับเวลา')
             await asyncio.sleep(300) # 5 mins
             await ctx.send('จบเกมคับ 5 นาที')
-            if self.vote_message is None:
-                embed, view = self.start_vote()
-                self.vote_message = await ctx.send(embed=embed, view=view)
-            else:
-                await self.update_vote_count()
+            await ctx.send('หาคำศัพท์ไม่ได้ภายในเวลาที่กำหนด ถือว่าไม่มีใครชนะ')
         
         self.active_timer = asyncio.create_task(timer_task())
         
@@ -98,13 +137,12 @@ class Insider(commands.Cog):
     def get_embed_vote(self):
         view = discord.ui.View()
         for player_name in self.players:
-            if self.players[player_name].role == "HOST":
+            if self.players[player_name].role == "MASTER":
                 continue
             vote_count = 0
-            try:
-                vote_count = self.vote_buttons[player_name].vote_count
-            except:
-                print('first time voting, no vote count yet')
+            vote_button = self.vote_buttons.get(player_name)
+            if vote_button is not None:
+                vote_count = vote_button.vote_count
             vote_button = VoteBtn(player_name, self, vote_count)
             view.add_item(vote_button)
             self.vote_buttons[player_name] = vote_button
@@ -112,10 +150,10 @@ class Insider(commands.Cog):
         
         embed = discord.Embed(
             title="Insider game",
-            description="กดปุ่มโหวตคนที่คุณคิดว่าเป็นจอมบงการ (Insider)",
+            description="กดปุ่มโหวตคนที่คุณคิดว่าเป็นจอมบงการ (insider)",
             color=int("1AA7EC", 16)
         )
-        embed.set_thumbnail(url="https://github.com/alenros/insider/blob/master/public/ms-icon-144x144.png?raw=true")
+        embed.set_thumbnail(url="https://github.com/alenros/insider/blob/MASTER/public/ms-icon-144x144.png?raw=true")
         embed.add_field(name="Voting", value="Please cast your vote by clicking the button below.", inline=False)
 
         for name, button in self.vote_buttons.items():
@@ -129,18 +167,37 @@ class Insider(commands.Cog):
             self.vote_message = await ctx.send(embed=embed, view=view)
         else:
             await self.update_vote_count()
+    
+    @commands.command()
+    async def new_vote(self, ctx):
+        self.vote_message = None
+        self.vote_buttons = {}
+        self.host_disabled = True
+        await ctx.send("เริ่มโหวตใหม่แล้วครับ")
+        embed, view = self.get_embed_vote()
+        return embed, view
             
     async def update_vote_count(self):
         embed, view = self.get_embed_vote()
         await self.vote_message.edit(embed=embed, view=view)
+        #check if total of voted in the vote buttons is equal to the number of players
+        total_votes = 0
+        for button in self.vote_buttons.values():
+            total_votes += button.vote_count
+        if total_votes >= len(self.players) - 1:
+            await self.check_vote()
+            
         return embed, view
+    
 
 
 class Player():
-    def __init__(self, name, role):
+    def __init__(self, name, role, id):
         self.name = name
         self.role = role
+        self.id = id
         self.vote = None
+        
         
         
 class VoteBtn(discord.ui.Button):
@@ -160,7 +217,7 @@ class VoteBtn(discord.ui.Button):
         print(self.name)
         user_name = interaction.user.name
         #check for eligible voter
-        if self.name not in self.insider_instance.players or self.insider_instance.players[self.name].role == "HOST":
+        if self.name not in self.insider_instance.players or (self.insider_instance.players[user_name].role == "MASTER" and self.insider_instance.host_disabled):
             await interaction.response.send_message("ผู้ดำเนินเกมกับคนที่ไม่เกี่ยวข้องอย่ายุ่งครับ.", ephemeral=True)
         
         #check if already voted
