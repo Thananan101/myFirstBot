@@ -52,21 +52,24 @@ class Insider(commands.Cog):
                 play_again_button = discord.ui.Button(style=discord.ButtonStyle.primary, label="เล่นอีกครั้ง")
             
                 async def play_again_callback(interaction: discord.Interaction):
+                    clicked = False
                     #ยังไม่เคย test condition นี้เลย mark หัวไว้
                     if interaction.user.name not in self.players:
                         await interaction.response.send_message("ผู้ดำเนินเกมกับคนที่ไม่เกี่ยวข้องอย่ายุ่งครับ.", ephemeral=True)
                     else:
-                        await interaction.response.defer()
-                        # Delete the play_again_button
-                        await interaction.message.delete()
-                        
-                        # Delete the original vote message
-                        await self.vote_message.delete()
-                        
-                        await self.vote_message.channel.send("{} กดปุ่มเพื่อเริ่มเกมใหม่".format(interaction.user.mention))
-        
-                        # Call the play command again
-                        await self.play(interaction.channel, *[player.id for player in self.players.values()])
+                        if not clicked:
+                            clicked = True
+                            await interaction.response.defer()
+                            # Delete the play_again_button
+                            await interaction.message.delete()
+                            
+                            # Delete the original vote message
+                            await self.vote_message.delete()
+                            
+                            await self.vote_message.channel.send("{} กดปุ่มเพื่อเริ่มเกมใหม่".format(interaction.user.mention))
+            
+                            # Call the play command again
+                            await self.play(interaction.channel, *[player.id for player in self.players.values()])
                     
                 play_again_button.callback = play_again_callback
                 view = discord.ui.View()
