@@ -14,6 +14,7 @@ class Insider(commands.Cog):
         self.vote_message = None
         self.host_disabled = True
         self.insider = None
+        self.vote_state = False
     
     async def get_member(self, user_id):
       user = await self.client.fetch_user(user_id)
@@ -72,6 +73,7 @@ class Insider(commands.Cog):
                 self.vote_buttons = {}
                 self.host_disabled = True
                 self.insider = None
+                self.vote_state = False
                 
         else:
             self.host_disabled = False
@@ -174,6 +176,8 @@ class Insider(commands.Cog):
     
     @commands.command()
     async def vote(self, ctx):
+        self.vote_state = True
+        self.active_timer = None
         if not self.vote_message:
             embed, view = await self.start_vote()
             self.vote_message = await ctx.send(embed=embed, view=view)
