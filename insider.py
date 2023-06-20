@@ -13,6 +13,7 @@ class Insider(commands.Cog):
         self.vote_buttons = {}  # Store the VoteBtn objects here
         self.vote_message = None
         self.host_disabled = True
+        self.insider = None
     
     async def get_member(self, user_id):
       user = await self.client.fetch_user(user_id)
@@ -35,7 +36,6 @@ class Insider(commands.Cog):
         vote_counts = [button.vote_count for button in self.vote_buttons.values()]
         max_vote_count = max(vote_counts)
         
-    
         if vote_counts.count(max_vote_count) == 1:
             max_vote_player = next(
             (player for player, button in self.vote_buttons.items() if button.vote_count == max_vote_count), None
@@ -43,6 +43,14 @@ class Insider(commands.Cog):
             if max_vote_player:
                 await self.vote_message.channel.send("เกมจบลงแล้วครับ!")
                 await self.vote_message.channel.send("ผู้ที่ถูกโหวตมากสุดก็คือ {}".format(max_vote_player))
+                #check if the max_vote_players is the insider
+                voted_player = self.players[max_vote_player]
+                if voted_player.role == "INSIDER":
+                    await self.vote_message.channel.send("เป็นคำตอบที่...ที่ !!")
+                    await asyncio.sleep(1)  # Delay execution for 1 second
+                    await self.vote_message.channel.send("ถูกต้องนะค้าบบบบ".format(max_vote_player))
+                else:
+                    await self.vote_message.channel.send('หลอนจัด คำตอบที่ถูกต้องคือ {}'.format(self.insider.name))
                 # delete the timer task
                 if self.active_timer is not None:
                     self.active_timer.cancel()
@@ -52,24 +60,9 @@ class Insider(commands.Cog):
                 play_again_button = discord.ui.Button(style=discord.ButtonStyle.primary, label="เล่นอีกครั้ง")
             
                 async def play_again_callback(interaction: discord.Interaction):
-                    clicked = False
-                    #ยังไม่เคย test condition นี้เลย mark หัวไว้
-                    if interaction.user.name not in self.players:
-                        await interaction.response.send_message("ผู้ดำเนินเกมกับคนที่ไม่เกี่ยวข้องอย่ายุ่งครับ.", ephemeral=True)
-                    else:
-                        if not clicked:
-                            clicked = True
-                            await interaction.response.defer()
-                            # Delete the play_again_button
-                            await interaction.message.delete()
-                            
-                            # Delete the original vote message
-                            await self.vote_message.delete()
-                            
-                            await self.vote_message.channel.send("{} กดปุ่มเพื่อเริ่มเกมใหม่".format(interaction.user.mention))
-            
-                            # Call the play command again
-                            await self.play(interaction.channel, *[player.id for player in self.players.values()])
+                    await interaction.response.defer()
+                    # Call the play command again
+                    await self.play(interaction.channel, *[player.id for player in self.players.values()])
                     
                 play_again_button.callback = play_again_callback
                 view = discord.ui.View()
@@ -78,6 +71,7 @@ class Insider(commands.Cog):
                 self.vote_message = None
                 self.vote_buttons = {}
                 self.host_disabled = True
+                self.insider = None
                 
         else:
             self.host_disabled = False
@@ -128,15 +122,18 @@ class Insider(commands.Cog):
             if role == 'MASTER':
                 await player.send('คุณได้เป็น MASTER นะครับ ดูแลเกมดีๆด้วยล่ะ')
                 await player.send(item_string)
+                master = player
             elif role == 'INSIDER':
                 await player.send('คุณได้เป็น INSIDER นะครับ ทำตัวเนียนๆด้วยล่ะ')
                 await player.send(item_string)
+                self.insider = player
             elif role == 'dumb':
                 await player.send('เป็นชาวบ้านโง่ ๆ สู้ ๆ ละกัน')
             await player.send('-------------------------')
             self.players[player.name] = Player(player.name, role, player_id)
 
         async def timer_task():
+            await ctx.send('ท่าน {} คือ MASTER ครับ'.format(master.mention))
             await ctx.send('เกมเริ่ม พวกคุณมีเวลา 5 นาที เลทสึโก') 
             await ctx.send('เริ่มจับเวลา')
             await asyncio.sleep(300) # 5 mins
@@ -168,7 +165,7 @@ class Insider(commands.Cog):
             description="กดปุ่มโหวตคนที่คุณคิดว่าเป็นจอมบงการ (insider)",
             color=int("1AA7EC", 16)
         )
-        embed.set_thumbnail(url="https://github.com/alenros/insider/blob/master/public/favicon-96x96.png?raw=true")
+        embed.set_thumbnail(url="https://github.com/alenros/insider/blob/MASTER/public/ms-icon-144x144.png?raw=true")
         embed.add_field(name="Voting", value="Please cast your vote by clicking the button below.", inline=False)
 
         for name, button in self.vote_buttons.items():
@@ -197,8 +194,15 @@ class Insider(commands.Cog):
         await self.vote_message.edit(embed=embed, view=view)
         #check if total of voted in the vote buttons is equal to the number of players
         total_votes = 0
+        #half players is half of the number of players excludind the master
+        half_players = len(self.players) // 2
         for button in self.vote_buttons.values():
             total_votes += button.vote_count
+            #check if any button has more than half of the players
+            if button.vote_count > half_players:
+                await self.check_vote()
+                return
+        print(total_votes)
         if total_votes >= len(self.players) - 1:
             await self.check_vote()
             
@@ -224,7 +228,7 @@ class VoteBtn(discord.ui.Button):
         
         # Set the button properties
         self.style = discord.ButtonStyle.primary
-        self.label = f"{self.name}"
+        self.label = f"{self.name} (Clicks: {self.vote_count})"
         self.custom_id = f"vote_{str(self.name)}"
         
     async def callback(self, interaction: discord.Interaction):
@@ -241,11 +245,11 @@ class VoteBtn(discord.ui.Button):
             prev_vote = self.insider_instance.players[user_name].vote
             prev_button = self.insider_instance.vote_buttons[prev_vote]
             prev_button.vote_count -= 1
-            prev_button.label = f"{prev_button.name}"
+            prev_button.label = f"{prev_button.name} (Clicks: {prev_button.vote_count})"
         
         #add score to new vote
         self.vote_count += 1
-        self.label = f"{self.name}"
+        self.label = f"{self.name} (Clicks: {self.vote_count})"
         print(self.vote_count)
         self.insider_instance.players[user_name].vote = self.name
         await interaction.response.defer()
