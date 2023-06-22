@@ -4,6 +4,7 @@ import random
 import asyncio
 import re
 import json
+import threading
 
 class Insider(commands.Cog):
     def __init__(self, client):
@@ -15,6 +16,7 @@ class Insider(commands.Cog):
         self.host_disabled = True
         self.insider = None
         self.vote_state = False
+        self.vote_lock = threading.Lock()  # Create a lock object
     
     async def get_member(self, user_id):
       user = await self.client.fetch_user(user_id)
@@ -183,7 +185,7 @@ class Insider(commands.Cog):
             self.vote_message = await ctx.send(embed=embed, view=view)
         else:
             await self.update_vote_count()
-    
+
     @commands.command()
     async def new_vote(self, ctx):
         self.vote_message = None
@@ -224,11 +226,12 @@ class Player():
         
         
 class VoteBtn(discord.ui.Button):
-    def __init__(self, name, insider_instance, vote_count = 0, *args, **kwargs):
+    def __init__(self, name, insider_instance, vote_count=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = name
         self.insider_instance = insider_instance
         self.vote_count = vote_count
+        self.lock = asyncio.Lock()  # Create an asyncio lock object for the button
         
         # Set the button properties
         self.style = discord.ButtonStyle.primary
@@ -237,29 +240,28 @@ class VoteBtn(discord.ui.Button):
         
     async def callback(self, interaction: discord.Interaction):
         print('callback')
-        print(self.name)
         user_name = interaction.user.name
-        #check for eligible voter
+        print('{} click {}'.format(user_name, self.name))
+        
+        # Check for eligible voter
         if self.name not in self.insider_instance.players or (self.insider_instance.players[user_name].role == "MASTER" and self.insider_instance.host_disabled):
             await interaction.response.send_message("ผู้ดำเนินเกมกับคนที่ไม่เกี่ยวข้องอย่ายุ่งครับ.", ephemeral=True)
         
-        #check if already voted
-        if self.insider_instance.players[user_name].vote is not None:
-            #deduct from previous vote
-            prev_vote = self.insider_instance.players[user_name].vote
-            prev_button = self.insider_instance.vote_buttons[prev_vote]
-            prev_button.vote_count -= 1
-            prev_button.label = f"{prev_button.name} (Clicks: {prev_button.vote_count})"
-        
-        #add score to new vote
-        self.vote_count += 1
-        self.label = f"{self.name} (Clicks: {self.vote_count})"
-        print(self.vote_count)
-        self.insider_instance.players[user_name].vote = self.name
-        await interaction.response.defer()
-        
-        #update the vote count
-        await self.insider_instance.update_vote_count()
+        # Acquire the lock
+        locked = self.lock.locked()
+        if not locked:
+            async with self.lock:
+                # Add score to new vote
+                self.vote_count += 1
+                self.label = f"{self.name} (Clicks: {self.vote_count})"
+                print(self.vote_count)
+                self.insider_instance.players[user_name].vote = self.name
+                await interaction.response.defer()
+
+                # Update the vote count
+                await self.insider_instance.update_vote_count()
+        else:
+            await interaction.response.send_message("The button is currently locked. Please wait and try again later.", ephemeral=True)
         print('--------')
         
         
