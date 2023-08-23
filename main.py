@@ -1,6 +1,7 @@
 import discord
 import os 
 from random import randrange
+import random
 from keep_awake import keep_alive
 from discord.ext import commands
 from discord.utils import get
@@ -208,7 +209,7 @@ async def time(ctx):
   await ctx.message.channel.send("ขณะนี้เวลา: {}:{}:{} {}".format(current_hour, current_min, current_sec, current_period))
 
 
-#unuseable
+#unusable
 @client.command(pass_context = True, aliases=['tr', 'แปล'])
 async def translate(ctx, *, args):
   text = ' '.join(args)
@@ -217,7 +218,23 @@ async def translate(ctx, *, args):
   txt_translated = translator.translate(args, src=lang, dest='th')
   await ctx.send(txt_translated)
 
+async def partition (list_in, n):
+    random.shuffle(list_in)
+    return [list_in[i::n] for i in range(n)]
 
+
+@client.command(pass_context=True, aliases=['สุ่มทีม', 'random_team', 'group_random', 'random_group'])
+async def team(ctx, *args):
+  players = [*args,]
+  teams = await partition(players, 2)
+  for i, team in enumerate(teams):
+    await ctx.send("ทีมที่ {} มีสมาชิกดังนี้ {}".format(i+1, ' '.join(team)))
+ 
+@client.command(pass_context=True)
+async def random_map(ctx):
+  maps = ['Bind', 'Haven', 'Split', 'Ascent', 'Icebox', 'Breeze', 'Fracture', "Lotus', 'Pearl"]
+  map_chose = random.choice(maps)
+  await ctx.send("Map ที่ได้คือ {}".format(map_chose))
 
 
 def playSong(ctx, url):
